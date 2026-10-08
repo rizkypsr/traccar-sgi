@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Accordion,
   AccordionSummary,
@@ -27,8 +28,9 @@ import { useAsyncTask, useCatch } from '../../reactHelper';
 import { messagesActions } from '../../store';
 import { useAdministrator } from '../../common/util/permissions';
 
-// Served by the separate WhatsApp templates API, proxied on the same origin
-const endpoint = '/templates-api';
+// Separate WhatsApp templates API on its own port; authenticates with the Traccar session cookie
+const endpoint =
+  import.meta.env.VITE_TEMPLATES_API_URL || 'https://idgps.web.id:8443/templates-api';
 
 const placeholders = ['name', 'uniqueid', 'contact', 'phone', 'sim', 'expiration', 'days'];
 
@@ -47,10 +49,10 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-// The API authenticates with the Traccar session cookie. A 404 without a JSON body comes from
-// Traccar itself (not logged in or session expired); API errors always carry {"error": "..."}.
+// All errors are JSON {"error": "..."}: 401 = not logged in / session expired,
+// 403 = not an administrator or origin not allowed, 503 = API cannot verify the session
 const request = async (url, init) => {
-  const response = await fetch(url, { ...init, credentials: 'same-origin' });
+  const response = await fetch(url, { ...init, credentials: 'include' });
   const text = await response.text();
   let json;
   try {
@@ -59,14 +61,22 @@ const request = async (url, init) => {
     json = null;
   }
   if (!response.ok) {
-    if (response.status === 404 && typeof json?.error !== 'string') {
-      const error = new Error('Session expired');
-      error.sessionExpired = true;
-      throw error;
-    }
-    throw new Error(json?.error || text || response.statusText);
+    const error = new Error(json?.error || `HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
   }
   return json || {};
+};
+
+const errorMessage = (e, t) => {
+  switch (e.status) {
+    case 401:
+      return t('whatsappSessionExpired');
+    case 503:
+      return t('whatsappUnavailable');
+    default:
+      return e.message;
+  }
 };
 
 const findUnknownPlaceholders = (body) => [
@@ -80,6 +90,7 @@ const findUnknownPlaceholders = (body) => [
 const WhatsAppTemplatesAccordion = () => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const t = useTranslation();
   const admin = useAdministrator();
 
@@ -87,28 +98,28 @@ const WhatsAppTemplatesAccordion = () => {
   const [error, setError] = useState();
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
-
-  const errorMessage = (e) => (e.sessionExpired ? t('whatsappSessionExpired') : e.message);
+  const [reload, setReload] = useState(0);
 
   useAsyncTask(
     async ({ signal }) => {
       if (!admin) {
         return;
       }
+      setError(null);
       try {
-        const { data } = await request(endpoint, { signal });
+        // retries bypass the HTTP cache
+        const { data } = await request(endpoint, {
+          signal,
+          cache: reload ? 'no-store' : 'default',
+        });
         setTemplates(data || []);
       } catch (e) {
         if (e.name !== 'AbortError') {
-          setError(
-            e.sessionExpired
-              ? t('whatsappSessionExpired')
-              : `${t('whatsappUnavailable')}: ${e.message}`,
-          );
+          setError({ status: e.status, message: errorMessage(e, t) });
         }
       }
     },
-    [admin, t],
+    [admin, reload, t],
   );
 
   const handleSave = useCatch(async () => {
@@ -123,7 +134,7 @@ const WhatsAppTemplatesAccordion = () => {
       setEditing(null);
       dispatch(messagesActions.push({ message: t('whatsappTemplateSaved'), severity: 'success' }));
     } catch (e) {
-      throw new Error(errorMessage(e), { cause: e });
+      throw new Error(errorMessage(e, t), { cause: e });
     } finally {
       setSaving(false);
     }
@@ -142,7 +153,26 @@ const WhatsAppTemplatesAccordion = () => {
           <Typography variant="subtitle1">WhatsApp</Typography>
         </AccordionSummary>
         <AccordionDetails className={classes.details}>
-          {error && <Alert severity="warning">{error}</Alert>}
+          {error && (
+            <Alert
+              severity="warning"
+              action={
+                error.status === 401 ? (
+                  <Button color="inherit" size="small" onClick={() => navigate('/login')}>
+                    {t('loginLogin')}
+                  </Button>
+                ) : (
+                  error.status !== 403 && (
+                    <Button color="inherit" size="small" onClick={() => setReload(reload + 1)}>
+                      {t('whatsappRetry')}
+                    </Button>
+                  )
+                )
+              }
+            >
+              {error.message}
+            </Alert>
+          )}
           {templates && (
             <Table size="small">
               <TableHead>

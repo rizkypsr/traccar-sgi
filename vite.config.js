@@ -7,15 +7,12 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const server = env.TRACCAR_SERVER || 'http://localhost:8082';
-  // templates API lives on the same origin as Traccar in production
-  const templatesApi = env.TEMPLATES_API || server;
   return {
     server: {
       port: 3000,
       proxy: {
         '/api/socket': { target: server.replace(/^http/, 'ws'), ws: true, changeOrigin: true },
         '/api': { target: server, changeOrigin: true },
-        '/templates-api': { target: templatesApi, changeOrigin: true },
       },
     },
     build: {
