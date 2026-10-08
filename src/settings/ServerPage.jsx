@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import FileInput from '../common/components/FileInput';
 import { sessionActions } from '../store';
 import EditAttributesAccordion from './components/EditAttributesAccordion';
+import WhatsAppTemplatesAccordion from './components/WhatsAppTemplatesAccordion';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import SelectField from '../common/components/SelectField';
 import PageLayout from '../common/components/PageLayout';
@@ -343,6 +344,7 @@ const ServerPage = () => {
                 />
               </AccordionDetails>
             </Accordion>
+            <WhatsAppTemplatesAccordion />
             <EditAttributesAccordion
               attributes={item.attributes}
               setAttributes={(attributes) => setItem({ ...item, attributes })}
