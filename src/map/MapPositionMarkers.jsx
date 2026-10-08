@@ -2,8 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { map } from './core/MapView';
 import MapMarkers from './MapMarkers';
-import { formatTime, getStatusColor } from '../common/util/formatter';
-import { mapIconKey } from './core/preloadImages';
+import { formatTime, getDeviceState } from '../common/util/formatter';
+import { deviceIconKey } from './core/preloadImages';
 import { useAttributePreference } from '../common/util/preferences';
 import { fromMapCoordinates } from './core/mapUtil';
 
@@ -12,7 +12,6 @@ const MapPositionMarkers = ({
   onMapClick,
   onMarkerClick,
   showStatus,
-  selectedPosition,
   titleField,
   disabled,
 }) => {
@@ -20,7 +19,6 @@ const MapPositionMarkers = ({
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
 
   const mapCluster = useAttributePreference('mapCluster', true);
-  const directionType = useAttributePreference('mapDirection', 'selected');
 
   const onMapClickCallback = useCallback(
     (event) => {
@@ -39,31 +37,16 @@ const MapPositionMarkers = ({
 
   const buildMarker = (position) => {
     const device = devices[position.deviceId];
-    let showDirection;
-    switch (directionType) {
-      case 'none':
-        showDirection = false;
-        break;
-      case 'all':
-        showDirection = position.course > 0;
-        break;
-      default:
-        showDirection = selectedPosition?.id === position.id && position.course > 0;
-        break;
-    }
-    const color = showStatus
-      ? position.attributes.color || getStatusColor(device.status)
-      : 'neutral';
+    const state = getDeviceState(device, position, showStatus);
     const titles = { name: device.name, fixTime: formatTime(position.fixTime, 'seconds') };
     return {
       id: position.id,
       deviceId: position.deviceId,
       latitude: position.latitude,
       longitude: position.longitude,
-      image: `${mapIconKey(device.category)}-${color}`,
+      image: `${deviceIconKey(device.category)}-${state}`,
       title: titles[titleField || 'name'],
       rotation: position.course,
-      direction: showDirection,
     };
   };
 
@@ -79,7 +62,7 @@ const MapPositionMarkers = ({
       <MapMarkers
         markers={markers.filter((it) => it.deviceId !== selectedDeviceId)}
         showTitles
-        direction
+        rotate
         cluster={mapCluster}
         onClick={onClick}
         disabled={disabled}
@@ -87,7 +70,7 @@ const MapPositionMarkers = ({
       <MapMarkers
         markers={markers.filter((it) => it.deviceId === selectedDeviceId)}
         showTitles
-        direction
+        rotate
         onClick={onClick}
         disabled={disabled}
       />

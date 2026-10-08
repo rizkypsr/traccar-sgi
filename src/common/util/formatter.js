@@ -152,6 +152,14 @@ export const getStatusColor = (status) => {
   }
 };
 
+export const getDeviceState = (device, position, showStatus = true) => {
+  if (showStatus && device?.status !== 'online') {
+    return 'offline';
+  }
+  const motion = position?.attributes?.motion ?? position?.speed > 0;
+  return motion ? 'moving' : 'parking';
+};
+
 export const getBatteryStatus = (batteryLevel) => {
   if (batteryLevel >= 70) {
     return 'success';

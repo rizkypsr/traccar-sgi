@@ -24,10 +24,11 @@ import {
   formatBoolean,
   formatPercentage,
   formatStatus,
+  getDeviceState,
   getStatusColor,
 } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
-import { mapIconKey, mapIcons } from '../map/core/preloadImages';
+import { deviceIconUrl } from '../map/core/preloadImages';
 import { useAdministrator } from '../common/util/permissions';
 import EngineIcon from '../resources/images/data/engine.svg?react';
 import { useAttributePreference } from '../common/util/preferences';
@@ -38,10 +39,13 @@ import MotionBar from './components/MotionBar';
 dayjs.extend(relativeTime);
 
 const useStyles = makeStyles()((theme) => ({
+  avatar: {
+    backgroundColor: 'transparent',
+  },
   icon: {
-    width: '25px',
-    height: '25px',
-    filter: 'brightness(0) invert(1)',
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
   },
   batteryText: {
     fontSize: '0.75rem',
@@ -127,8 +131,12 @@ const DeviceRow = ({ devices, index, style }) => {
         className={selectedDeviceId === item.id ? classes.selected : null}
       >
         <ListItemAvatar>
-          <Avatar>
-            <img className={classes.icon} src={mapIcons[mapIconKey(item.category)]} alt="" />
+          <Avatar variant="square" className={classes.avatar}>
+            <img
+              className={classes.icon}
+              src={deviceIconUrl(item.category, getDeviceState(item, position))}
+              alt=""
+            />
           </Avatar>
         </ListItemAvatar>
         <ListItemText

@@ -1,8 +1,7 @@
 import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material';
-import { loadImage, prepareIcon } from './mapUtil';
+import { loadImage, prepareDeviceIcon, prepareIcon } from './mapUtil';
 
-import directionSvg from '../../resources/images/direction.svg';
 import backgroundSvg from '../../resources/images/background.svg';
 import animalSvg from '@material-symbols/svg-600/outlined/pets.svg';
 import bicycleSvg from '@material-symbols/svg-600/outlined/directions_bike.svg';
@@ -81,6 +80,38 @@ export const mapIconKey = (category) => {
   }
 };
 
+const deviceIconCategories = [
+  'bicycle',
+  'bus',
+  'car',
+  'default',
+  'motorcycle',
+  'person',
+  'tractor',
+  'trailer',
+  'truck',
+  'van',
+];
+
+export const deviceIconStates = ['moving', 'offline', 'parking'];
+
+export const deviceIconKey = (category) => {
+  switch (category) {
+    case 'offroad':
+    case 'pickup':
+      return 'car';
+    case 'trolleybus':
+      return 'bus';
+    case 'scooter':
+      return 'motorcycle';
+    default:
+      return deviceIconCategories.includes(category) ? category : 'default';
+  }
+};
+
+export const deviceIconUrl = (category, state) =>
+  `${import.meta.env.BASE_URL}icons/${deviceIconKey(category)}_${state}.webp`;
+
 export const eventIcons = {
   alarm: warningSvg,
   commandResult: taskAltSvg,
@@ -112,6 +143,8 @@ export const eventIconKey = (type) => (eventIcons.hasOwnProperty(type) ? type : 
 
 export const mapImages = {};
 
+const deviceIconSize = 48;
+
 const theme = createTheme({
   palette: {
     neutral: { main: grey[500] },
@@ -121,7 +154,6 @@ const theme = createTheme({
 export default async () => {
   const background = await loadImage(backgroundSvg);
   mapImages.background = await prepareIcon(background);
-  mapImages.direction = await prepareIcon(await loadImage(directionSvg));
   await Promise.all(
     Object.keys(mapIcons).map(async (key) => {
       const results = [];
@@ -134,6 +166,16 @@ export default async () => {
       });
       await Promise.all(results);
     }),
+  );
+  await Promise.all(
+    deviceIconCategories.flatMap((category) =>
+      deviceIconStates.map(async (state) => {
+        const image = await loadImage(deviceIconUrl(category, state));
+        if (image) {
+          mapImages[`${category}-${state}`] = prepareDeviceIcon(image, deviceIconSize);
+        }
+      }),
+    ),
   );
   await Promise.all(
     Object.keys(eventIcons).map((key) =>

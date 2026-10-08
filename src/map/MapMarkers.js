@@ -10,7 +10,7 @@ import { findFonts, toMapCoordinates } from './core/mapUtil';
 const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
 const onMouseLeave = () => (map.getCanvas().style.cursor = '');
 
-const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled }) => {
+const MapMarkers = ({ markers, showTitles, cluster, rotate, onClick, disabled }) => {
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const iconScale = useAttributePreference('iconScale', desktop ? 0.75 : 1);
@@ -37,12 +37,17 @@ const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled
     map.easeTo({ center: feature.geometry.coordinates, zoom });
   }, []);
 
+  const rotationLayout = rotate
+    ? { 'icon-rotate': ['get', 'rotation'], 'icon-rotation-alignment': 'map' }
+    : {};
+
   const layers = [
     {
       type: 'symbol',
       filter: ['!has', 'point_count'],
       layout: showTitles
         ? {
+            ...rotationLayout,
             'icon-image': '{image}',
             'icon-size': iconScale,
             'icon-allow-overlap': true,
@@ -55,6 +60,7 @@ const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled
             'symbol-sort-key': ['get', 'id'],
           }
         : {
+            ...rotationLayout,
             'icon-image': '{image}',
             'icon-size': iconScale,
             'icon-allow-overlap': true,
@@ -66,21 +72,6 @@ const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled
         : {}),
     },
   ];
-
-  if (direction) {
-    layers.push({
-      key: 'direction',
-      type: 'symbol',
-      filter: ['all', ['!has', 'point_count'], ['==', 'direction', true]],
-      layout: {
-        'icon-image': 'direction',
-        'icon-size': iconScale,
-        'icon-allow-overlap': true,
-        'icon-rotate': ['get', 'rotation'],
-        'icon-rotation-alignment': 'map',
-      },
-    });
-  }
 
   if (cluster) {
     layers.push({
@@ -103,25 +94,22 @@ const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled
   useMapLayer({
     source: cluster ? { cluster: true, clusterMaxZoom: 14, clusterRadius: 50 } : undefined,
     layers,
-    layersDeps: [showTitles, cluster, direction, iconScale, onMarkerClick, onClusterClick],
+    layersDeps: [showTitles, cluster, rotate, iconScale, onMarkerClick, onClusterClick],
     data: {
       type: 'FeatureCollection',
-      features: markers.map(
-        ({ latitude, longitude, image, title, rotation, direction: showDirection, ...rest }) => ({
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: toMapCoordinates(longitude, latitude),
-          },
-          properties: {
-            ...rest,
-            image: image || 'default-neutral',
-            title: title || '',
-            rotation: rotation || 0,
-            direction: showDirection || false,
-          },
-        }),
-      ),
+      features: markers.map(({ latitude, longitude, image, title, rotation, ...rest }) => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: toMapCoordinates(longitude, latitude),
+        },
+        properties: {
+          ...rest,
+          image: image || 'default-neutral',
+          title: title || '',
+          rotation: rotation || 0,
+        },
+      })),
     },
     dataDeps: [markers, showTitles],
   });

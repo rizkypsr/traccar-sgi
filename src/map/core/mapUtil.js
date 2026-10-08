@@ -29,8 +29,24 @@ export const loadImage = (url) =>
   new Promise((imageLoaded) => {
     const image = new Image();
     image.onload = () => imageLoaded(image);
+    image.onerror = () => imageLoaded(null);
     image.src = url;
   });
+
+export const prepareDeviceIcon = (image, size) => {
+  const scale = size / Math.max(image.width, image.height);
+  const width = Math.round(image.width * scale * devicePixelRatio);
+  const height = Math.round(image.height * scale * devicePixelRatio);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext('2d');
+  context.drawImage(image, 0, 0, width, height);
+
+  return context.getImageData(0, 0, width, height);
+};
 
 const canvasTintImage = (image, color) => {
   const canvas = document.createElement('canvas');
