@@ -2,9 +2,7 @@ import { useMemo } from 'react';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 import LogoImage from './LogoImage';
-
-export const loginBrandColor = '#E31E2D';
-export const loginBrandColorDark = '#B5121F';
+import { brandColor } from '../common/theme/brand';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -13,7 +11,7 @@ const useStyles = makeStyles()((theme) => ({
     alignItems: 'center',
     minHeight: '100%',
     padding: theme.spacing(2),
-    backgroundColor: loginBrandColor,
+    backgroundColor: brandColor,
     backgroundImage: `url(${import.meta.env.BASE_URL}login-background.webp)`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -63,8 +61,8 @@ const LoginLayout = ({ children }) => {
         components: outerTheme.components,
         palette: {
           mode: 'light',
-          primary: { main: loginBrandColor },
-          secondary: { main: loginBrandColor },
+          primary: { main: brandColor },
+          secondary: { main: brandColor },
           background: { default: '#FFFFFF' },
         },
       }),

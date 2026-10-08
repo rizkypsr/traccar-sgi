@@ -1,87 +1,44 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
-import {
-  Card,
-  CardContent,
-  Typography,
-  CardActions,
-  IconButton,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  Menu,
-  MenuItem,
-  CardMedia,
-  TableFooter,
-  Link,
-  Tooltip,
-} from '@mui/material';
+import { Card, Typography, IconButton, Menu, MenuItem, ButtonBase } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
+import dayjs from 'dayjs';
 import CloseIcon from '@mui/icons-material/Close';
-import RouteIcon from '@mui/icons-material/Route';
-import SendIcon from '@mui/icons-material/Send';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PendingIcon from '@mui/icons-material/Pending';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
+import KeyIcon from '@mui/icons-material/Key';
+import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';
+import BatteryStdIcon from '@mui/icons-material/BatteryStd';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
+import AssistantDirectionOutlinedIcon from '@mui/icons-material/AssistantDirectionOutlined';
+import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
-import PositionValue from './PositionValue';
+import AddressValue from './AddressValue';
 import { useDeviceReadonly, useRestriction } from '../util/permissions';
-import usePositionAttributes from '../attributes/usePositionAttributes';
 import { devicesActions } from '../../store';
 import { useCatch, useCatchCallback } from '../../reactHelper';
 import { useAttributePreference } from '../util/preferences';
+import { getDeviceState } from '../util/formatter';
+import { speedFromKnots, speedUnitString } from '../util/converter';
+import { deviceStateColors, mapIconKey, mapIcons } from '../../map/core/preloadImages';
 import fetchOrThrow from '../util/fetchOrThrow';
+import { brandColor } from '../theme/brand';
 
-const useStyles = makeStyles()((theme, { desktopPadding }) => ({
-  card: {
-    pointerEvents: 'auto',
-    width: theme.dimensions.popupMaxWidth,
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing(1, 1, 0, 2),
-    color: theme.palette.text.secondary,
-  },
-  media: {
-    height: theme.dimensions.popupImageHeight,
-    '& > div': {
-      color: theme.palette.common.white,
-      mixBlendMode: 'difference',
-    },
-  },
-  content: {
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-    maxHeight: theme.dimensions.cardContentMaxHeight,
-    overflow: 'auto',
-  },
-  icon: {
-    width: '25px',
-    height: '25px',
-    filter: 'brightness(0) invert(1)',
-  },
-  table: {
-    '& .MuiTableCell-sizeSmall': {
-      paddingLeft: 0,
-      paddingRight: 0,
-    },
-    '& .MuiTableCell-sizeSmall:first-of-type': {
-      paddingRight: theme.spacing(1),
-    },
-  },
-  cell: {
-    borderBottom: 'none',
-  },
-  actions: {
-    justifyContent: 'space-between',
-  },
+const stateLabels = {
+  moving: 'deviceStateMoving',
+  parking: 'deviceStateParked',
+  offline: 'deviceStateOffline',
+};
+
+const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
   root: {
     pointerEvents: 'none',
     position: 'fixed',
@@ -97,27 +54,211 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     },
     transform: 'translateX(-50%)',
   },
+  card: {
+    pointerEvents: 'auto',
+    width: 440,
+    maxWidth: `calc(100vw - ${theme.spacing(4)})`,
+    padding: theme.spacing(1.25, 1.5, 1.5),
+    borderRadius: theme.spacing(2.5),
+    backgroundColor: theme.palette.background.paper,
+    backgroundImage: `linear-gradient(${alpha(brandColor, 0.04)}, ${alpha(brandColor, 0.04)})`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(1, 1.25, 1.25),
+      gap: theme.spacing(0.75),
+    },
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    cursor: 'move',
+  },
+  glyph: {
+    flexShrink: 0,
+    width: 28,
+    height: 28,
+    backgroundColor: color,
+    maskSize: 'contain',
+    maskRepeat: 'no-repeat',
+    maskPosition: 'center',
+    WebkitMaskSize: 'contain',
+    WebkitMaskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center',
+  },
+  photo: {
+    flexShrink: 0,
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    objectFit: 'cover',
+  },
+  title: {
+    flex: 1,
+    minWidth: 0,
+  },
+  name: {
+    fontWeight: 700,
+    lineHeight: 1.25,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  subtitle: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    columnGap: theme.spacing(1.5),
+  },
+  stateInline: {
+    [theme.breakpoints.up('sm')]: {
+      display: 'none',
+    },
+  },
+  stateSide: {
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
+    },
+  },
+  state: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    color,
+    fontWeight: 700,
+    whiteSpace: 'nowrap',
+    '&::before': {
+      content: '""',
+      width: 8,
+      height: 8,
+      borderRadius: '50%',
+      backgroundColor: color,
+    },
+  },
+  stats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: theme.spacing(0.75),
+  },
+  stat: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing(0.75),
+    padding: theme.spacing(0.75, 0.5),
+    borderRadius: theme.spacing(1.25),
+    backgroundColor: alpha(brandColor, 0.08),
+    minWidth: 0,
+    '& svg': {
+      color: brandColor,
+      fontSize: 20,
+    },
+    [theme.breakpoints.down('sm')]: {
+      flexDirection: 'column',
+      gap: 0,
+      '& svg': {
+        fontSize: 16,
+      },
+    },
+  },
+  statText: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    minWidth: 0,
+  },
+  statLabel: {
+    fontSize: '0.7rem',
+    lineHeight: 1.2,
+  },
+  statValue: {
+    fontWeight: 700,
+    fontSize: '0.9rem',
+    lineHeight: 1.2,
+    whiteSpace: 'nowrap',
+  },
+  address: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    padding: theme.spacing(0.75, 1),
+    borderRadius: theme.spacing(1.25),
+    backgroundColor: alpha(theme.palette.text.primary, 0.06),
+    minWidth: 0,
+    '& svg': {
+      color: brandColor,
+      fontSize: 18,
+    },
+  },
+  addressText: {
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  actions: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(5, 1fr)',
+    gap: theme.spacing(0.75),
+  },
+  action: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.25),
+    padding: theme.spacing(0.75, 0.25),
+    borderRadius: theme.spacing(1.25),
+    backgroundColor: alpha(brandColor, 0.08),
+    color: theme.palette.text.primary,
+    textAlign: 'center',
+    '& svg': {
+      color: brandColor,
+      fontSize: 20,
+    },
+    '&:hover': {
+      backgroundColor: alpha(brandColor, 0.16),
+    },
+    '&.Mui-disabled': {
+      opacity: 0.45,
+    },
+  },
+  actionActive: {
+    backgroundColor: brandColor,
+    color: theme.palette.common.white,
+    '& svg': {
+      color: theme.palette.common.white,
+    },
+    '&:hover': {
+      backgroundColor: brandColor,
+    },
+  },
+  actionLabel: {
+    fontSize: '0.7rem',
+    lineHeight: 1.15,
+  },
 }));
 
-const StatusRow = ({ name, content }) => {
-  const { classes } = useStyles({ desktopPadding: 0 });
+const Stat = ({ classes, icon, label, value }) => (
+  <div className={classes.stat}>
+    {icon}
+    <div className={classes.statText}>
+      <Typography color="textSecondary" className={classes.statLabel} noWrap>
+        {label}
+      </Typography>
+      <Typography className={classes.statValue}>{value}</Typography>
+    </div>
+  </div>
+);
 
-  return (
-    <TableRow>
-      <TableCell className={classes.cell}>
-        <Typography variant="body2">{name}</Typography>
-      </TableCell>
-      <TableCell className={classes.cell}>
-        <Typography variant="body2" color="textSecondary">
-          {content}
-        </Typography>
-      </TableCell>
-    </TableRow>
-  );
-};
+const Action = ({ classes, cx, icon, label, active, ...props }) => (
+  <ButtonBase className={cx(classes.action, active && classes.actionActive)} {...props}>
+    {icon}
+    <Typography className={classes.actionLabel}>{label}</Typography>
+  </ButtonBase>
+);
 
 const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
-  const { classes, cx } = useStyles({ desktopPadding });
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -128,20 +269,16 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const shareDisabled = useSelector((state) => state.session.server.attributes.disableShare);
   const user = useSelector((state) => state.session.user);
   const device = useSelector((state) => state.devices.items[deviceId]);
+  const follow = useSelector((state) => state.devices.follow);
 
-  const deviceImage = device?.attributes?.deviceImage;
-
-  const positionAttributes = usePositionAttributes(t);
-  const positionItems = useAttributePreference(
-    'positionItems',
-    'fixTime,address,speed,totalDistance',
-  );
-
+  const speedUnit = useAttributePreference('speedUnit');
   const navigationAppLink = useAttributePreference('navigationAppLink');
   const navigationAppTitle = useAttributePreference('navigationAppTitle');
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const state = getDeviceState(device, position);
+  const { classes, cx } = useStyles({ desktopPadding, color: deviceStateColors[state] });
 
+  const [anchorEl, setAnchorEl] = useState(null);
   const [removing, setRemoving] = useState(false);
 
   const handleRemove = useCatch(async (removed) => {
@@ -171,6 +308,32 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     navigate(`/settings/geofence/${item.id}`);
   }, [navigate, position, t]);
 
+  const deviceImage = device?.attributes?.deviceImage;
+  const glyphUrl = device && `url("${mapIcons[mapIconKey(device.category)]}")`;
+  const attributes = position?.attributes || {};
+  const coordinates = position && `${position.latitude},${position.longitude}`;
+
+  const speed = position
+    ? `${Math.round(speedFromKnots(position.speed, speedUnit))} ${speedUnitString(speedUnit, t)}`
+    : '-';
+  const ignition = attributes.hasOwnProperty('ignition')
+    ? attributes.ignition
+      ? 'ON'
+      : 'OFF'
+    : '-';
+  const satellites = attributes.hasOwnProperty('sat') ? attributes.sat : '-';
+  const battery = attributes.hasOwnProperty('batteryLevel')
+    ? `${Math.round(attributes.batteryLevel)}%`
+    : '-';
+
+  const navigationLink =
+    position &&
+    (navigationAppLink
+      ? navigationAppLink
+          .replace('{latitude}', position.latitude)
+          .replace('{longitude}', position.longitude)
+      : `https://www.google.com/maps/dir/?api=1&destination=${coordinates}`);
+
   return (
     <>
       <div className={classes.root}>
@@ -179,131 +342,177 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
             default={{ x: 0, y: 0, width: 'auto', height: 'auto' }}
             enableResizing={false}
             dragHandleClassName="draggable-header"
+            cancel="button"
             style={{ position: 'relative' }}
           >
-            <Card elevation={3} className={classes.card}>
-              <CardMedia
-                className={cx('draggable-header', deviceImage && classes.media)}
-                image={deviceImage && `/api/media/${device.uniqueId}/${deviceImage}`}
-              >
-                <div className={classes.header}>
-                  <Typography variant="body2" color="inherit">
+            <Card elevation={6} className={classes.card}>
+              <div className={cx(classes.header, 'draggable-header')}>
+                {deviceImage ? (
+                  <img
+                    className={classes.photo}
+                    src={`/api/media/${device.uniqueId}/${deviceImage}`}
+                    alt=""
+                  />
+                ) : (
+                  <span
+                    className={classes.glyph}
+                    style={{ maskImage: glyphUrl, WebkitMaskImage: glyphUrl }}
+                  />
+                )}
+                <div className={classes.title}>
+                  <Typography variant="subtitle1" className={classes.name}>
                     {device.name}
                   </Typography>
-                  <IconButton size="small" color="inherit" onClick={onClose} onTouchStart={onClose}>
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
+                  <div className={classes.subtitle}>
+                    {position && (
+                      <Typography variant="caption" color="textSecondary">
+                        {dayjs(position.fixTime).format('DD MMM YYYY, HH:mm')}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" className={cx(classes.state, classes.stateInline)}>
+                      {t(stateLabels[state])}
+                    </Typography>
+                  </div>
                 </div>
-              </CardMedia>
+                <Typography className={cx(classes.state, classes.stateSide)}>
+                  {t(stateLabels[state])}
+                </Typography>
+                <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
+                  <MoreVertIcon />
+                </IconButton>
+                <IconButton size="small" onClick={onClose} onTouchStart={onClose}>
+                  <CloseIcon />
+                </IconButton>
+              </div>
               {position && (
-                <CardContent className={classes.content}>
-                  <Table size="small" className={classes.table}>
-                    <TableBody>
-                      {positionItems
-                        .split(',')
-                        .filter(
-                          (key) =>
-                            position.hasOwnProperty(key) || position.attributes.hasOwnProperty(key),
-                        )
-                        .map((key) => (
-                          <StatusRow
-                            key={key}
-                            name={positionAttributes[key]?.name || key}
-                            content={
-                              <PositionValue
-                                position={position}
-                                property={position.hasOwnProperty(key) ? key : null}
-                                attribute={position.hasOwnProperty(key) ? null : key}
-                              />
-                            }
-                          />
-                        ))}
-                    </TableBody>
-                    <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={2} className={classes.cell}>
-                          <Typography variant="body2">
-                            <Link component={RouterLink} to={`/position/${position.id}`}>
-                              {t('sharedShowDetails')}
-                            </Link>
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    </TableFooter>
-                  </Table>
-                </CardContent>
+                <>
+                  <div className={classes.stats}>
+                    <Stat
+                      classes={classes}
+                      icon={<SpeedOutlinedIcon />}
+                      label={t('deviceCardSpeed')}
+                      value={speed}
+                    />
+                    <Stat
+                      classes={classes}
+                      icon={<KeyIcon />}
+                      label={t('deviceCardIgnition')}
+                      value={ignition}
+                    />
+                    <Stat
+                      classes={classes}
+                      icon={<SatelliteAltIcon />}
+                      label={t('deviceCardSatellites')}
+                      value={satellites}
+                    />
+                    <Stat
+                      classes={classes}
+                      icon={<BatteryStdIcon />}
+                      label={t('deviceCardBattery')}
+                      value={battery}
+                    />
+                  </div>
+                  <div className={classes.address}>
+                    <PlaceOutlinedIcon />
+                    <Typography variant="body2" className={classes.addressText}>
+                      <AddressValue
+                        latitude={position.latitude}
+                        longitude={position.longitude}
+                        originalAddress={position.address}
+                      />
+                    </Typography>
+                  </div>
+                </>
               )}
-              <CardActions className={classes.actions} disableSpacing>
-                <Tooltip title={t('sharedExtra')}>
-                  <IconButton
-                    color="secondary"
-                    onClick={(e) => setAnchorEl(e.currentTarget)}
-                    disabled={!position}
-                  >
-                    <PendingIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('reportReplay')}>
-                  <IconButton
-                    onClick={() => navigate(`/replay?deviceId=${deviceId}`)}
-                    disabled={disableActions || !position}
-                  >
-                    <RouteIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('commandTitle')}>
-                  <IconButton
-                    onClick={() => navigate(`/settings/device/${deviceId}/command`)}
-                    disabled={disableActions}
-                  >
-                    <SendIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('sharedEdit')}>
-                  <IconButton
-                    onClick={() => navigate(`/settings/device/${deviceId}`)}
-                    disabled={disableActions || deviceReadonly}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('sharedRemove')}>
-                  <IconButton
-                    color="error"
-                    onClick={() => setRemoving(true)}
-                    disabled={disableActions || deviceReadonly}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              </CardActions>
+              <div className={classes.actions}>
+                <Action
+                  classes={classes}
+                  cx={cx}
+                  icon={<GpsFixedIcon />}
+                  label={t('deviceFollow')}
+                  active={follow}
+                  onClick={() => dispatch(devicesActions.toggleFollow())}
+                  disabled={disableActions || !position}
+                />
+                <Action
+                  classes={classes}
+                  cx={cx}
+                  icon={<PlayCircleOutlinedIcon />}
+                  label={t('deviceCardPlayback')}
+                  onClick={() => navigate(`/replay?deviceId=${deviceId}`)}
+                  disabled={disableActions || !position}
+                />
+                <Action
+                  classes={classes}
+                  cx={cx}
+                  icon={<AssistantDirectionOutlinedIcon />}
+                  label={
+                    navigationAppLink && navigationAppTitle
+                      ? navigationAppTitle
+                      : t('deviceCardNavigate')
+                  }
+                  component="a"
+                  href={navigationLink}
+                  target="_blank"
+                  disabled={!position}
+                />
+                <Action
+                  classes={classes}
+                  cx={cx}
+                  icon={<MapOutlinedIcon />}
+                  label={t('linkGoogleMaps')}
+                  component="a"
+                  href={`https://www.google.com/maps/search/?api=1&query=${coordinates}`}
+                  target="_blank"
+                  disabled={!position}
+                />
+                <Action
+                  classes={classes}
+                  cx={cx}
+                  icon={<InfoOutlinedIcon />}
+                  label={t('deviceCardDetails')}
+                  onClick={() => navigate(`/position/${position.id}`)}
+                  disabled={!position}
+                />
+              </div>
             </Card>
           </Rnd>
         )}
       </div>
-      {position && (
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+        <MenuItem
+          onClick={() => navigate(`/settings/device/${deviceId}/command`)}
+          disabled={disableActions}
+        >
+          {t('commandTitle')}
+        </MenuItem>
+        <MenuItem
+          onClick={() => navigate(`/settings/device/${deviceId}`)}
+          disabled={disableActions || deviceReadonly}
+        >
+          {t('sharedEdit')}
+        </MenuItem>
+        {position && (
           <MenuItem
             onClick={() => navigate(`/stream?deviceId=${deviceId}`)}
             disabled={position.protocol !== 'jt808'}
           >
             {t('linkLiveVideo')}
           </MenuItem>
-          {!readonly && <MenuItem onClick={handleGeofence}>{t('sharedCreateGeofence')}</MenuItem>}
+        )}
+        {position && !readonly && (
+          <MenuItem onClick={handleGeofence}>{t('sharedCreateGeofence')}</MenuItem>
+        )}
+        {position && (
           <MenuItem
             component="a"
             target="_blank"
-            href={`https://www.google.com/maps/search/?api=1&query=${position.latitude}%2C${position.longitude}`}
-          >
-            {t('linkGoogleMaps')}
-          </MenuItem>
-          <MenuItem
-            component="a"
-            target="_blank"
-            href={`https://maps.apple.com/?ll=${position.latitude},${position.longitude}`}
+            href={`https://maps.apple.com/?ll=${coordinates}`}
           >
             {t('linkAppleMaps')}
           </MenuItem>
+        )}
+        {position && (
           <MenuItem
             component="a"
             target="_blank"
@@ -311,24 +520,22 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
           >
             {t('linkStreetView')}
           </MenuItem>
-          {navigationAppTitle && navigationAppLink && (
-            <MenuItem
-              component="a"
-              target="_blank"
-              href={navigationAppLink
-                .replace('{latitude}', position.latitude)
-                .replace('{longitude}', position.longitude)}
-            >
-              {navigationAppTitle}
-            </MenuItem>
-          )}
-          {!shareDisabled && !user.temporary && (
-            <MenuItem onClick={() => navigate(`/settings/device/${deviceId}/share`)}>
-              <Typography color="secondary">{t('sharedShare')}</Typography>
-            </MenuItem>
-          )}
-        </Menu>
-      )}
+        )}
+        {!shareDisabled && !user.temporary && (
+          <MenuItem onClick={() => navigate(`/settings/device/${deviceId}/share`)}>
+            {t('sharedShare')}
+          </MenuItem>
+        )}
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            setRemoving(true);
+          }}
+          disabled={disableActions || deviceReadonly}
+        >
+          <Typography color="error">{t('sharedRemove')}</Typography>
+        </MenuItem>
+      </Menu>
       <RemoveDialog
         open={removing}
         endpoint="devices"

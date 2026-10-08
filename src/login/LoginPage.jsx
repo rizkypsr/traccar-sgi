@@ -8,7 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { sessionActions } from '../store';
 import { useTranslation } from '../common/components/LocalizationProvider';
-import LoginLayout, { loginBrandColor, loginBrandColorDark } from './LoginLayout';
+import LoginLayout from './LoginLayout';
+import { brandColor, brandColorDark } from '../common/theme/brand';
 import usePersistedState from '../common/util/usePersistedState';
 import {
   generateLoginToken,
@@ -48,7 +49,7 @@ const useStyles = makeStyles()((theme) => ({
     color: theme.palette.grey[800],
   },
   lockIcon: {
-    color: loginBrandColor,
+    color: brandColor,
   },
   loginButton: {
     height: theme.spacing(7),
@@ -59,10 +60,10 @@ const useStyles = makeStyles()((theme) => ({
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
     color: '#FFFFFF',
-    background: `linear-gradient(180deg, #F2334A 0%, ${loginBrandColor} 100%)`,
+    background: `linear-gradient(180deg, #F2334A 0%, ${brandColor} 100%)`,
     boxShadow: '0 8px 20px rgba(227, 30, 45, 0.35)',
     '&:hover': {
-      background: `linear-gradient(180deg, ${loginBrandColor} 0%, ${loginBrandColorDark} 100%)`,
+      background: `linear-gradient(180deg, ${brandColor} 0%, ${brandColorDark} 100%)`,
     },
     '&.Mui-disabled': {
       color: '#FFFFFF',
@@ -79,7 +80,7 @@ const useStyles = makeStyles()((theme) => ({
   link: {
     cursor: 'pointer',
     fontWeight: 700,
-    color: loginBrandColorDark,
+    color: brandColorDark,
   },
   resetLink: {
     marginLeft: 'auto',

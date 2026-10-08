@@ -5,6 +5,7 @@ const { reducer, actions } = createSlice({
   initialState: {
     items: {},
     selectedId: null,
+    follow: false,
     loaded: false,
   },
   reducers: {
@@ -19,6 +20,10 @@ const { reducer, actions } = createSlice({
     selectId(state, action) {
       state.selectTime = Date.now();
       state.selectedId = action.payload;
+      state.follow = false;
+    },
+    toggleFollow(state) {
+      state.follow = !state.follow;
     },
     remove(state, action) {
       delete state.items[action.payload];

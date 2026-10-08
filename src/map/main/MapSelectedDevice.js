@@ -14,6 +14,7 @@ const MapSelectedDevice = () => {
 
   const selectZoom = useAttributePreference('web.selectZoom', 10);
   const mapFollow = useAttributePreference('mapFollow', false);
+  const follow = useSelector((state) => state.devices.follow);
 
   const position = useSelector((state) => state.session.positions[currentId]);
 
@@ -29,7 +30,7 @@ const MapSelectedDevice = () => {
     if (
       (currentId !== previousId ||
         currentTime !== previousTime ||
-        (mapFollow && positionChanged)) &&
+        ((mapFollow || follow) && positionChanged)) &&
       position
     ) {
       map.easeTo({
@@ -44,6 +45,7 @@ const MapSelectedDevice = () => {
     currentTime,
     previousTime,
     mapFollow,
+    follow,
     position,
     previousPosition,
     selectZoom,
