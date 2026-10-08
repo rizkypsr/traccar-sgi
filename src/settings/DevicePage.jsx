@@ -11,6 +11,7 @@ import {
   Button,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import dayjs from 'dayjs';
 import FileInput from '../common/components/FileInput';
 import EditItemView from './components/EditItemView';
 import EditAttributesAccordion from './components/EditAttributesAccordion';
@@ -18,7 +19,7 @@ import SelectField from '../common/components/SelectField';
 import deviceCategories from '../common/util/deviceCategories';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import useDeviceAttributes from '../common/attributes/useDeviceAttributes';
-import { useManager } from '../common/util/permissions';
+import { useAdministrator, useManager } from '../common/util/permissions';
 import SettingsMenu from './components/SettingsMenu';
 import useCommonDeviceAttributes from '../common/attributes/useCommonDeviceAttributes';
 import { useCatch } from '../reactHelper';
@@ -30,6 +31,7 @@ const DevicePage = () => {
   const { classes } = useSettingsStyles();
   const t = useTranslation();
 
+  const admin = useAdministrator();
   const manager = useManager();
 
   const commonDeviceAttributes = useCommonDeviceAttributes(t);
@@ -38,7 +40,11 @@ const DevicePage = () => {
   const [searchParams] = useSearchParams();
   const uniqueId = searchParams.get('uniqueId');
 
-  const [item, setItem] = useState(uniqueId ? { uniqueId } : null);
+  // non-admin users get a fixed expiration of 1 year from registration
+  const [defaultItem] = useState(() =>
+    admin ? undefined : { expirationTime: dayjs().add(1, 'year').toISOString() },
+  );
+  const [item, setItem] = useState(uniqueId ? { uniqueId, ...defaultItem } : null);
   const [showQr, setShowQr] = useState(false);
   const [imageFile, setImageFile] = useState(null);
 
@@ -64,6 +70,7 @@ const DevicePage = () => {
       endpoint="devices"
       item={item}
       setItem={setItem}
+      defaultItem={defaultItem}
       validate={validate}
       menu={<SettingsMenu />}
       breadcrumbs={['settingsTitle', 'sharedDevice']}
@@ -132,17 +139,26 @@ const DevicePage = () => {
                 endpoint="/api/calendars"
                 label={t('sharedCalendar')}
               />
-              <TextField
-                label={t('userExpirationTime')}
-                type="date"
-                value={item.expirationTime ? item.expirationTime.split('T')[0] : '2099-01-01'}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setItem({ ...item, expirationTime: new Date(e.target.value).toISOString() });
-                  }
-                }}
-                disabled={!manager}
-              />
+              {admin ? (
+                <TextField
+                  label={t('userExpirationTime')}
+                  type="date"
+                  value={item.expirationTime ? item.expirationTime.split('T')[0] : '2099-01-01'}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setItem({ ...item, expirationTime: new Date(e.target.value).toISOString() });
+                    }
+                  }}
+                />
+              ) : (
+                <TextField
+                  label={t('userExpirationTime')}
+                  type="date"
+                  value={item.expirationTime ? dayjs(item.expirationTime).format('YYYY-MM-DD') : ''}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                  disabled
+                />
+              )}
               <FormControlLabel
                 control={
                   <Checkbox
