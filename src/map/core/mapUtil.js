@@ -48,6 +48,50 @@ export const prepareDeviceIcon = (image, size) => {
   return context.getImageData(0, 0, width, height);
 };
 
+// Stretchable rounded label background for icon-text-fit, with an optional status dot
+export const prepareLabelBackground = (dotColor) => {
+  const ratio = devicePixelRatio;
+  const margin = 3;
+  const height = 24;
+  const radius = 8;
+  const dotSpace = dotColor ? 14 : 0;
+  const width = 32 + dotSpace;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = (width + margin * 2) * ratio;
+  canvas.height = (height + margin * 2) * ratio;
+
+  const context = canvas.getContext('2d');
+  context.scale(ratio, ratio);
+  context.shadowColor = 'rgba(0, 0, 0, 0.25)';
+  context.shadowBlur = 3;
+  context.shadowOffsetY = 1;
+  context.fillStyle = '#FFFFFF';
+  context.beginPath();
+  context.roundRect(margin, margin, width, height, radius);
+  context.fill();
+
+  if (dotColor) {
+    context.shadowColor = 'transparent';
+    context.fillStyle = dotColor;
+    context.beginPath();
+    context.arc(margin + 12, margin + height / 2, 4, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  const left = margin + radius + dotSpace;
+  const right = margin + width - radius;
+  return {
+    data: context.getImageData(0, 0, canvas.width, canvas.height),
+    options: {
+      pixelRatio: ratio,
+      stretchX: [[left * ratio, right * ratio]],
+      stretchY: [[(margin + radius) * ratio, (margin + height - radius) * ratio]],
+      content: [left * ratio, (margin + 4) * ratio, right * ratio, (margin + height - 4) * ratio],
+    },
+  };
+};
+
 const canvasTintImage = (image, color) => {
   const canvas = document.createElement('canvas');
   canvas.width = image.width * devicePixelRatio;

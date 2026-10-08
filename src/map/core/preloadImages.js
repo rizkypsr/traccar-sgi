@@ -1,6 +1,6 @@
 import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material';
-import { loadImage, prepareDeviceIcon, prepareIcon } from './mapUtil';
+import { loadImage, prepareDeviceIcon, prepareIcon, prepareLabelBackground } from './mapUtil';
 
 import backgroundSvg from '../../resources/images/background.svg';
 import animalSvg from '@material-symbols/svg-600/outlined/pets.svg';
@@ -143,6 +143,14 @@ export const eventIconKey = (type) => (eventIcons.hasOwnProperty(type) ? type : 
 
 export const mapImages = {};
 
+export const mapLabelImages = {};
+
+export const deviceStateColors = {
+  moving: '#12A06B',
+  parking: '#2563EB',
+  offline: '#6B7280',
+};
+
 const deviceIconSize = 48;
 
 const theme = createTheme({
@@ -152,6 +160,10 @@ const theme = createTheme({
 });
 
 export default async () => {
+  mapLabelImages.label = prepareLabelBackground();
+  Object.entries(deviceStateColors).forEach(([state, color]) => {
+    mapLabelImages[`label-${state}`] = prepareLabelBackground(color);
+  });
   const background = await loadImage(backgroundSvg);
   mapImages.background = await prepareIcon(background);
   await Promise.all(

@@ -38,7 +38,8 @@ const MapPositionMarkers = ({
   const buildMarker = (position) => {
     const device = devices[position.deviceId];
     const state = getDeviceState(device, position, showStatus);
-    const titles = { name: device.name, fixTime: formatTime(position.fixTime, 'seconds') };
+    const name = device.name.length > 15 ? `${device.name.slice(0, 15)}…` : device.name;
+    const titles = { name, fixTime: formatTime(position.fixTime, 'seconds') };
     return {
       id: position.id,
       deviceId: position.deviceId,
@@ -46,6 +47,7 @@ const MapPositionMarkers = ({
       longitude: position.longitude,
       image: `${deviceIconKey(device.category)}-${state}`,
       title: titles[titleField || 'name'],
+      labelImage: showStatus ? `label-${state}` : 'label',
       rotation: position.course,
     };
   };

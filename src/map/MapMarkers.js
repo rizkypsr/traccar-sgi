@@ -45,33 +45,46 @@ const MapMarkers = ({ markers, showTitles, cluster, rotate, onClick, disabled })
     {
       type: 'symbol',
       filter: ['!has', 'point_count'],
-      layout: showTitles
-        ? {
-            ...rotationLayout,
-            'icon-image': '{image}',
-            'icon-size': iconScale,
-            'icon-allow-overlap': true,
-            'text-field': '{title}',
-            'text-allow-overlap': true,
-            'text-anchor': 'bottom',
-            'text-offset': [0, -2 * iconScale],
-            'text-font': findFonts(map),
-            'text-size': 12,
-            'symbol-sort-key': ['get', 'id'],
-          }
-        : {
-            ...rotationLayout,
-            'icon-image': '{image}',
-            'icon-size': iconScale,
-            'icon-allow-overlap': true,
-            'symbol-sort-key': ['get', 'id'],
-          },
-      ...(showTitles ? { paint: { 'text-halo-color': 'white', 'text-halo-width': 1 } } : {}),
+      layout: {
+        ...rotationLayout,
+        'icon-image': '{image}',
+        'icon-size': iconScale,
+        'icon-allow-overlap': true,
+        'symbol-sort-key': ['get', 'id'],
+      },
       ...(onClick
         ? { on: { mouseenter: onMouseEnter, mouseleave: onMouseLeave, click: onMarkerClick } }
         : {}),
     },
   ];
+
+  if (showTitles) {
+    layers.push({
+      key: 'titles',
+      type: 'symbol',
+      filter: ['all', ['!', ['has', 'point_count']], ['!=', ['get', 'title'], '']],
+      layout: {
+        'icon-image': ['coalesce', ['get', 'labelImage'], 'label'],
+        'icon-text-fit': 'both',
+        'icon-allow-overlap': true,
+        'text-field': '{title}',
+        'text-allow-overlap': true,
+        'text-anchor': 'bottom',
+        'text-offset': [0, -(24 * iconScale + 10) / 13],
+        'text-font': findFonts(map),
+        'text-size': 13,
+        'symbol-sort-key': ['get', 'id'],
+      },
+      paint: {
+        'text-color': '#1F1F1F',
+        'text-halo-color': '#1F1F1F',
+        'text-halo-width': 0.3,
+      },
+      ...(onClick
+        ? { on: { mouseenter: onMouseEnter, mouseleave: onMouseLeave, click: onMarkerClick } }
+        : {}),
+    });
+  }
 
   if (cluster) {
     layers.push({
