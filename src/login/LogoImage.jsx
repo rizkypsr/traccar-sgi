@@ -1,35 +1,28 @@
-import { useTheme, useMediaQuery } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
-import Logo from '../resources/images/logo.svg?react';
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles()(() => ({
   image: {
-    alignSelf: 'center',
-    maxWidth: '240px',
+    maxWidth: '260px',
     maxHeight: '120px',
-    width: 'auto',
+    width: '75%',
     height: 'auto',
-    margin: theme.spacing(2),
+    objectFit: 'contain',
   },
 }));
 
-const LogoImage = ({ color }) => {
-  const theme = useTheme();
+const LogoImage = () => {
   const { classes } = useStyles();
 
-  const expanded = !useMediaQuery(theme.breakpoints.down('lg'));
-
   const logo = useSelector((state) => state.session.server.attributes?.logo);
-  const logoInverted = useSelector((state) => state.session.server.attributes?.logoInverted);
 
-  if (logo) {
-    if (expanded && logoInverted) {
-      return <img className={classes.image} src={logoInverted} alt="" />;
-    }
-    return <img className={classes.image} src={logo} alt="" />;
-  }
-  return <Logo className={classes.image} style={{ color }} />;
+  return (
+    <img
+      className={classes.image}
+      src={logo || `${import.meta.env.BASE_URL}login-logo.webp`}
+      alt=""
+    />
+  );
 };
 
 export default LogoImage;

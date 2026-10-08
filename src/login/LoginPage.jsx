@@ -1,26 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  useMediaQuery,
-  Select,
-  MenuItem,
-  FormControl,
-  Button,
-  TextField,
-  Link,
-  Alert,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import CountryFlag from 'react-country-flag';
+import { Button, TextField, Link, Alert, IconButton, Tooltip, InputAdornment } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { useTheme } from '@mui/material/styles';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { sessionActions } from '../store';
-import { useLocalization, useTranslation } from '../common/components/LocalizationProvider';
-import LoginLayout from './LoginLayout';
+import { useTranslation } from '../common/components/LocalizationProvider';
+import LoginLayout, { loginBrandColor, loginBrandColorDark } from './LoginLayout';
 import usePersistedState from '../common/util/usePersistedState';
 import {
   generateLoginToken,
@@ -28,9 +16,7 @@ import {
   nativeEnvironment,
   nativePostMessage,
 } from '../common/components/NativeInterface';
-import LogoImage from './LogoImage';
 import { useCatch } from '../reactHelper';
-import QrCodeDialog from '../common/components/QrCodeDialog';
 import PasswordField from '../common/components/PasswordField';
 
 const useStyles = makeStyles()((theme) => ({
@@ -41,27 +27,62 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     gap: theme.spacing(1),
+    padding: theme.spacing(0.5),
+    borderRadius: theme.spacing(1.5),
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
   },
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2),
+    gap: theme.spacing(2.5),
+  },
+  field: {
+    '& .MuiOutlinedInput-root': {
+      height: theme.spacing(7),
+      borderRadius: theme.spacing(1.75),
+      backgroundColor: '#FFFFFF',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+    },
+  },
+  userIcon: {
+    color: theme.palette.grey[800],
+  },
+  lockIcon: {
+    color: loginBrandColor,
+  },
+  loginButton: {
+    height: theme.spacing(7),
+    marginTop: theme.spacing(1),
+    borderRadius: theme.spacing(1.75),
+    fontSize: '1.125rem',
+    fontWeight: 700,
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+    color: '#FFFFFF',
+    background: `linear-gradient(180deg, #F2334A 0%, ${loginBrandColor} 100%)`,
+    boxShadow: '0 8px 20px rgba(227, 30, 45, 0.35)',
+    '&:hover': {
+      background: `linear-gradient(180deg, ${loginBrandColor} 0%, ${loginBrandColorDark} 100%)`,
+    },
+    '&.Mui-disabled': {
+      color: '#FFFFFF',
+      opacity: 0.6,
+    },
   },
   extraContainer: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: theme.spacing(4),
-    marginTop: theme.spacing(2),
-  },
-  registerButton: {
-    minWidth: 'unset',
+    justifyContent: 'space-between',
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(1),
   },
   link: {
     cursor: 'pointer',
+    fontWeight: 700,
+    color: loginBrandColorDark,
   },
-  flag: {
-    marginRight: theme.spacing(1),
+  resetLink: {
+    marginLeft: 'auto',
   },
 }));
 
@@ -69,15 +90,7 @@ const LoginPage = () => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const theme = useTheme();
   const t = useTranslation();
-
-  const { languages, language, setLocalLanguage } = useLocalization();
-  const languageList = Object.entries(languages).map((values) => ({
-    code: values[0],
-    country: values[1].country,
-    name: values[1].name,
-  }));
 
   const [failed, setFailed] = useState(false);
 
@@ -85,13 +98,8 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [showServerTooltip, setShowServerTooltip] = useState(false);
-  const [showQr, setShowQr] = useState(false);
 
   const registrationEnabled = useSelector((state) => state.session.server.registration);
-  const languageEnabled = useSelector((state) => {
-    const attributes = state.session.server.attributes;
-    return !attributes.language && !attributes['ui.disableLoginLanguage'];
-  });
   const changeEnabled = useSelector((state) => !state.session.server.attributes.disableChange);
   const emailEnabled = useSelector((state) => state.session.server.emailEnabled);
   const openIdEnabled = useSelector((state) => state.session.server.openIdEnabled);
@@ -165,8 +173,8 @@ const LoginPage = () => {
 
   return (
     <LoginLayout>
-      <div className={classes.options}>
-        {nativeEnvironment && changeEnabled && (
+      {nativeEnvironment && changeEnabled && (
+        <div className={classes.options}>
           <IconButton color="primary" onClick={() => navigate('/change-server')}>
             <Tooltip
               title={`${t('settingsServer')}: ${window.location.hostname}`}
@@ -176,31 +184,9 @@ const LoginPage = () => {
               <VpnLockIcon />
             </Tooltip>
           </IconButton>
-        )}
-        {!nativeEnvironment && (
-          <IconButton color="primary" onClick={() => setShowQr(true)}>
-            <QrCode2Icon />
-          </IconButton>
-        )}
-        {languageEnabled && (
-          <FormControl>
-            <Select value={language} onChange={(e) => setLocalLanguage(e.target.value)}>
-              {languageList.map((it) => (
-                <MenuItem key={it.code} value={it.code}>
-                  <span className={classes.flag}>
-                    <CountryFlag countryCode={it.country} svg />
-                  </span>
-                  {it.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
-      </div>
+        </div>
+      )}
       <div className={classes.container}>
-        {useMediaQuery(theme.breakpoints.down('lg')) && (
-          <LogoImage color={theme.palette.primary.main} />
-        )}
         {!!announcement && !announcementShown && (
           <Alert severity="info" onClose={() => setAnnouncementShown(true)}>
             {announcement}
@@ -211,28 +197,51 @@ const LoginPage = () => {
             <TextField
               required
               error={failed}
-              label={t('userEmail')}
+              className={classes.field}
+              placeholder={t('userEmail')}
               name="email"
               value={email}
               autoComplete="email"
               autoFocus={!email}
               onChange={(e) => setEmail(e.target.value)}
               helperText={failed && 'Invalid username or password'}
+              slotProps={{
+                htmlInput: { 'aria-label': t('userEmail') },
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonOutlinedIcon className={classes.userIcon} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             <PasswordField
               required
               error={failed}
-              label={t('userPassword')}
+              className={classes.field}
+              placeholder={t('userPassword')}
               name="password"
               value={password}
               autoComplete="current-password"
               autoFocus={!!email}
               onChange={(e) => setPassword(e.target.value)}
+              slotProps={{
+                htmlInput: { 'aria-label': t('userPassword') },
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon className={classes.lockIcon} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             {codeEnabled && (
               <TextField
                 required
                 error={failed}
+                className={classes.field}
                 label={t('loginTotpCode')}
                 name="code"
                 value={code}
@@ -244,7 +253,7 @@ const LoginPage = () => {
               onClick={handlePasswordLogin}
               type="submit"
               variant="contained"
-              color="secondary"
+              className={classes.loginButton}
               disabled={!email || !password || (codeEnabled && !code)}
             >
               {t('loginLogin')}
@@ -263,7 +272,7 @@ const LoginPage = () => {
                 onClick={() => navigate('/register')}
                 className={classes.link}
                 underline="none"
-                variant="caption"
+                variant="body2"
               >
                 {t('loginRegister')}
               </Link>
@@ -271,9 +280,9 @@ const LoginPage = () => {
             {emailEnabled && (
               <Link
                 onClick={() => navigate('/reset-password')}
-                className={classes.link}
+                className={`${classes.link} ${classes.resetLink}`}
                 underline="none"
-                variant="caption"
+                variant="body2"
               >
                 {t('loginReset')}
               </Link>
@@ -281,7 +290,6 @@ const LoginPage = () => {
           </div>
         )}
       </div>
-      <QrCodeDialog open={showQr} onClose={() => setShowQr(false)} />
     </LoginLayout>
   );
 };

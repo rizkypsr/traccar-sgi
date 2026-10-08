@@ -1,60 +1,87 @@
-import { useMediaQuery, Paper } from '@mui/material';
+import { useMemo } from 'react';
+import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
-import { useTheme } from '@mui/material/styles';
 import LogoImage from './LogoImage';
+
+export const loginBrandColor = '#E31E2D';
+export const loginBrandColorDark = '#B5121F';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
     display: 'flex',
-    height: '100%',
-  },
-  sidebar: {
-    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: theme.palette.primary.main,
-    paddingBottom: theme.spacing(5),
-    width: theme.dimensions.sidebarWidth,
-    [theme.breakpoints.down('lg')]: {
-      width: theme.dimensions.sidebarWidthTablet,
-    },
-    [theme.breakpoints.down('sm')]: {
-      width: '0px',
-    },
+    minHeight: '100%',
+    padding: theme.spacing(2),
+    backgroundColor: loginBrandColor,
+    backgroundImage: `url(${import.meta.env.BASE_URL}login-background.webp)`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
   },
-  paper: {
+  card: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-    boxShadow: '-2px 0px 16px rgba(0, 0, 0, 0.25)',
-    [theme.breakpoints.up('lg')]: {
-      padding: theme.spacing(0, 25, 0, 0),
+    width: '100%',
+    maxWidth: theme.spacing(56),
+    padding: theme.spacing(6, 4, 5),
+    borderRadius: theme.spacing(3),
+    position: 'relative',
+    isolation: 'isolate',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    boxShadow: '0 16px 48px rgba(120, 0, 10, 0.25)',
+    // blur on a pseudo-element so the card doesn't become the containing block for fixed children
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      zIndex: -1,
+      borderRadius: 'inherit',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+    },
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(5, 3, 4),
     },
   },
-  form: {
-    maxWidth: theme.spacing(52),
-    padding: theme.spacing(5),
-    width: '100%',
+  logo: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: theme.spacing(4),
   },
 }));
 
 const LoginLayout = ({ children }) => {
   const { classes } = useStyles();
-  const theme = useTheme();
+  const outerTheme = useTheme();
+
+  const loginTheme = useMemo(
+    () =>
+      createTheme({
+        typography: { fontFamily: outerTheme.typography.fontFamily },
+        direction: outerTheme.direction,
+        dimensions: outerTheme.dimensions,
+        components: outerTheme.components,
+        palette: {
+          mode: 'light',
+          primary: { main: loginBrandColor },
+          secondary: { main: loginBrandColor },
+          background: { default: '#FFFFFF' },
+        },
+      }),
+    [outerTheme],
+  );
 
   return (
-    <main className={classes.root}>
-      <div className={classes.sidebar}>
-        {!useMediaQuery(theme.breakpoints.down('lg')) && (
-          <LogoImage color={theme.palette.secondary.contrastText} />
-        )}
-      </div>
-      <Paper className={classes.paper}>
-        <form className={classes.form}>{children}</form>
-      </Paper>
-    </main>
+    <ThemeProvider theme={loginTheme}>
+      <main className={classes.root}>
+        <form className={classes.card}>
+          <div className={classes.logo}>
+            <LogoImage />
+          </div>
+          {children}
+        </form>
+      </main>
+    </ThemeProvider>
   );
 };
 
