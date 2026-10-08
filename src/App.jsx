@@ -7,7 +7,6 @@ import SocketController from './SocketController';
 import CachingController from './CachingController';
 import { useCatch, useAsyncTask } from './reactHelper';
 import { sessionActions } from './store';
-import UpdateController from './UpdateController';
 import MotionController from './main/MotionController';
 import TermsDialog from './common/components/TermsDialog';
 import Loader from './common/components/Loader';
@@ -76,7 +75,6 @@ const App = () => {
     <>
       <SocketController />
       <CachingController />
-      <UpdateController />
       <MotionController />
       <div className={classes.page}>
         <Outlet />
