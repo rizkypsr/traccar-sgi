@@ -1,6 +1,6 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { GlobalStyles, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import BottomMenu from './common/components/BottomMenu';
 import SocketController from './SocketController';
@@ -12,15 +12,28 @@ import TermsDialog from './common/components/TermsDialog';
 import Loader from './common/components/Loader';
 import fetchOrThrow from './common/util/fetchOrThrow';
 
+// Full-screen map pages run under the floating bottom navigation on mobile
+const mapRoutes = ['/', '/replay'];
+
 const useStyles = makeStyles()((theme) => ({
   page: {
     flexGrow: 1,
     overflow: 'auto',
   },
+  pagePadded: {
+    paddingBottom: theme.dimensions.bottomBarHeight,
+  },
   menu: {
+    position: 'fixed',
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 4,
     padding: theme.spacing(1),
-    backgroundColor: theme.palette.background.default,
+    pointerEvents: 'none',
+    '& > *': {
+      pointerEvents: 'auto',
+    },
     '@media print': {
       display: 'none',
     },
@@ -28,12 +41,14 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 const App = () => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   const theme = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const fullScreenMap = mapRoutes.includes(location.pathname);
 
   const newServer = useSelector((state) => state.session.server.newServer);
   const termsUrl = useSelector((state) => state.session.server.attributes.termsUrl);
@@ -78,13 +93,24 @@ const App = () => {
       <SocketController />
       <CachingController />
       <MotionController />
-      <div className={classes.page}>
+      <div className={cx(classes.page, !desktop && !fullScreenMap && classes.pagePadded)}>
         <Outlet />
       </div>
       {!desktop && (
-        <div className={classes.menu}>
-          <BottomMenu />
-        </div>
+        <>
+          {fullScreenMap && (
+            <GlobalStyles
+              styles={{
+                '.maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right': {
+                  marginBottom: theme.dimensions.bottomBarHeight,
+                },
+              }}
+            />
+          )}
+          <div className={classes.menu}>
+            <BottomMenu />
+          </div>
+        </>
       )}
     </>
   );

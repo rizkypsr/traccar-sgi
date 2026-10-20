@@ -80,6 +80,10 @@ const useStyles = makeStyles()((theme) => ({
     zIndex: 4,
     display: 'flex',
     minHeight: 0,
+    [theme.breakpoints.down('md')]: {
+      // keep the last rows clear of the floating bottom navigation
+      paddingBottom: theme.dimensions.bottomBarHeight,
+    },
   },
 }));
 
