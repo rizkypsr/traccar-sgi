@@ -1,23 +1,20 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
-import { Card, Typography, IconButton, Menu, MenuItem, ButtonBase } from '@mui/material';
+import {
+  Card,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  ButtonBase,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 import dayjs from 'dayjs';
-import CloseIcon from '@mui/icons-material/Close';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
-import KeyIcon from '@mui/icons-material/Key';
-import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';
-import BatteryStdIcon from '@mui/icons-material/BatteryStd';
-import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
-import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
-import AssistantDirectionOutlinedIcon from '@mui/icons-material/AssistantDirectionOutlined';
-import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
@@ -28,7 +25,59 @@ import { useCatch, useCatchCallback } from '../../reactHelper';
 import { useAttributePreference } from '../util/preferences';
 import { getDeviceState } from '../util/formatter';
 import { speedFromKnots, speedUnitString } from '../util/converter';
-import { deviceStateColors, mapIconKey, mapIcons } from '../../map/core/preloadImages';
+import { deviceStateColors } from '../../map/core/preloadImages';
+import {
+  SolarBatteryDuotone,
+  SolarBicyclingDuotone,
+  SolarBusDuotone,
+  SolarCarDuotone,
+  SolarCloseCircleDuotone,
+  SolarDeliveryDuotone,
+  SolarGpsDuotone,
+  SolarInfoDuotone,
+  SolarKeyDuotone,
+  SolarMapArrowDuotone,
+  SolarMapDuotone,
+  SolarMapPointDuotone,
+  SolarMenuDots,
+  SolarPlayCircleDuotone,
+  SolarSatelliteDuotone,
+  SolarScooterDuotone,
+  SolarSpeedometerDuotone,
+  SolarTramDuotone,
+  SolarUserDuotone,
+} from './SolarIcons';
+
+const categoryIcon = (category) => {
+  switch (category) {
+    case 'car':
+    case 'offroad':
+    case 'pickup':
+    case 'van':
+    case 'camper':
+      return SolarCarDuotone;
+    case 'bus':
+    case 'trolleybus':
+      return SolarBusDuotone;
+    case 'tram':
+    case 'train':
+      return SolarTramDuotone;
+    case 'bicycle':
+      return SolarBicyclingDuotone;
+    case 'motorcycle':
+    case 'scooter':
+      return SolarScooterDuotone;
+    case 'truck':
+    case 'trailer':
+    case 'tractor':
+    case 'crane':
+      return SolarDeliveryDuotone;
+    case 'person':
+      return SolarUserDuotone;
+    default:
+      return SolarMapPointDuotone;
+  }
+};
 import fetchOrThrow from '../util/fetchOrThrow';
 import { brandColor } from '../theme/brand';
 
@@ -38,7 +87,7 @@ const stateLabels = {
   offline: 'deviceStateOffline',
 };
 
-const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
+const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) => ({
   root: {
     pointerEvents: 'none',
     position: 'fixed',
@@ -48,11 +97,16 @@ const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
       left: `calc(50% + ${desktopPadding} / 2)`,
       bottom: theme.spacing(3),
     },
-    [theme.breakpoints.down('md')]: {
-      left: '50%',
-      bottom: `calc(${theme.spacing(3)} + ${theme.dimensions.bottomBarHeight}px)`,
-    },
     transform: 'translateX(-50%)',
+    // mobile: full-width sheet attached to the bottom navigation (or the screen edge)
+    [theme.breakpoints.down('md')]: {
+      left: 0,
+      right: 0,
+      transform: 'none',
+      bottom: attachToNav
+        ? `calc(${theme.dimensions.bottomBarHeight}px + env(safe-area-inset-bottom))`
+        : 0,
+    },
   },
   card: {
     pointerEvents: 'auto',
@@ -61,10 +115,15 @@ const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
     padding: theme.spacing(1.25, 1.5, 1.5),
     borderRadius: theme.spacing(2.5),
     backgroundColor: theme.palette.background.paper,
-    backgroundImage: `linear-gradient(${alpha(brandColor, 0.04)}, ${alpha(brandColor, 0.04)})`,
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(1),
+    [theme.breakpoints.down('md')]: {
+      width: '100%',
+      maxWidth: 'none',
+      borderRadius: theme.spacing(2.5, 2.5, 0, 0),
+      boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.12)',
+    },
     [theme.breakpoints.down('sm')]: {
       padding: theme.spacing(1, 1.25, 1.25),
       gap: theme.spacing(0.75),
@@ -78,15 +137,8 @@ const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
   },
   glyph: {
     flexShrink: 0,
-    width: 28,
-    height: 28,
-    backgroundColor: color,
-    maskSize: 'contain',
-    maskRepeat: 'no-repeat',
-    maskPosition: 'center',
-    WebkitMaskSize: 'contain',
-    WebkitMaskRepeat: 'no-repeat',
-    WebkitMaskPosition: 'center',
+    fontSize: 22,
+    color,
   },
   photo: {
     flexShrink: 0,
@@ -153,13 +205,13 @@ const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
     minWidth: 0,
     '& svg': {
       color: brandColor,
-      fontSize: 20,
+      fontSize: 16,
     },
     [theme.breakpoints.down('sm')]: {
       flexDirection: 'column',
       gap: 0,
       '& svg': {
-        fontSize: 16,
+        fontSize: 14,
       },
     },
   },
@@ -189,14 +241,13 @@ const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
     minWidth: 0,
     '& svg': {
       color: brandColor,
-      fontSize: 18,
+      fontSize: 15,
     },
   },
   addressText: {
     minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    lineHeight: 1.35,
+    overflowWrap: 'anywhere',
   },
   actions: {
     display: 'grid',
@@ -214,7 +265,7 @@ const useStyles = makeStyles()((theme, { desktopPadding, color }) => ({
     textAlign: 'center',
     '& svg': {
       color: brandColor,
-      fontSize: 20,
+      fontSize: 16,
     },
     '&:hover': {
       backgroundColor: alpha(brandColor, 0.16),
@@ -258,7 +309,14 @@ const Action = ({ classes, cx, icon, label, active, ...props }) => (
   </ButtonBase>
 );
 
-const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
+const StatusCard = ({
+  deviceId,
+  position,
+  onClose,
+  disableActions,
+  desktopPadding = 0,
+  attachToNav = false,
+}) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -276,7 +334,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const navigationAppTitle = useAttributePreference('navigationAppTitle');
 
   const state = getDeviceState(device, position);
-  const { classes, cx } = useStyles({ desktopPadding, color: deviceStateColors[state] });
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const { classes, cx } = useStyles({
+    desktopPadding,
+    color: deviceStateColors[state],
+    attachToNav,
+  });
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [removing, setRemoving] = useState(false);
@@ -309,7 +373,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   }, [navigate, position, t]);
 
   const deviceImage = device?.attributes?.deviceImage;
-  const glyphUrl = device && `url("${mapIcons[mapIconKey(device.category)]}")`;
   const attributes = position?.attributes || {};
   const coordinates = position && `${position.latitude},${position.longitude}`;
 
@@ -339,8 +402,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
       <div className={classes.root}>
         {device && (
           <Rnd
-            default={{ x: 0, y: 0, width: 'auto', height: 'auto' }}
+            default={{ x: 0, y: 0, width: desktop ? 'auto' : '100%', height: 'auto' }}
             enableResizing={false}
+            disableDragging={!desktop}
             dragHandleClassName="draggable-header"
             cancel="button"
             style={{ position: 'relative' }}
@@ -354,10 +418,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     alt=""
                   />
                 ) : (
-                  <span
-                    className={classes.glyph}
-                    style={{ maskImage: glyphUrl, WebkitMaskImage: glyphUrl }}
-                  />
+                  createElement(categoryIcon(device.category), { className: classes.glyph })
                 )}
                 <div className={classes.title}>
                   <Typography variant="subtitle1" className={classes.name}>
@@ -378,10 +439,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                   {t(stateLabels[state])}
                 </Typography>
                 <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
-                  <MoreVertIcon />
+                  <SolarMenuDots fontSize="small" />
                 </IconButton>
                 <IconButton size="small" onClick={onClose} onTouchStart={onClose}>
-                  <CloseIcon />
+                  <SolarCloseCircleDuotone fontSize="small" />
                 </IconButton>
               </div>
               {position && (
@@ -389,31 +450,31 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                   <div className={classes.stats}>
                     <Stat
                       classes={classes}
-                      icon={<SpeedOutlinedIcon />}
+                      icon={<SolarSpeedometerDuotone />}
                       label={t('deviceCardSpeed')}
                       value={speed}
                     />
                     <Stat
                       classes={classes}
-                      icon={<KeyIcon />}
+                      icon={<SolarKeyDuotone />}
                       label={t('deviceCardIgnition')}
                       value={ignition}
                     />
                     <Stat
                       classes={classes}
-                      icon={<SatelliteAltIcon />}
+                      icon={<SolarSatelliteDuotone />}
                       label={t('deviceCardSatellites')}
                       value={satellites}
                     />
                     <Stat
                       classes={classes}
-                      icon={<BatteryStdIcon />}
+                      icon={<SolarBatteryDuotone />}
                       label={t('deviceCardBattery')}
                       value={battery}
                     />
                   </div>
                   <div className={classes.address}>
-                    <PlaceOutlinedIcon />
+                    <SolarMapPointDuotone />
                     <Typography variant="body2" className={classes.addressText}>
                       <AddressValue
                         latitude={position.latitude}
@@ -428,7 +489,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 <Action
                   classes={classes}
                   cx={cx}
-                  icon={<GpsFixedIcon />}
+                  icon={<SolarGpsDuotone />}
                   label={t('deviceFollow')}
                   active={follow}
                   onClick={() => dispatch(devicesActions.toggleFollow())}
@@ -437,7 +498,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 <Action
                   classes={classes}
                   cx={cx}
-                  icon={<PlayCircleOutlinedIcon />}
+                  icon={<SolarPlayCircleDuotone />}
                   label={t('deviceCardPlayback')}
                   onClick={() => navigate(`/replay?deviceId=${deviceId}`)}
                   disabled={disableActions || !position}
@@ -445,7 +506,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 <Action
                   classes={classes}
                   cx={cx}
-                  icon={<AssistantDirectionOutlinedIcon />}
+                  icon={<SolarMapArrowDuotone />}
                   label={
                     navigationAppLink && navigationAppTitle
                       ? navigationAppTitle
@@ -459,7 +520,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 <Action
                   classes={classes}
                   cx={cx}
-                  icon={<MapOutlinedIcon />}
+                  icon={<SolarMapDuotone />}
                   label={t('linkGoogleMaps')}
                   component="a"
                   href={`https://www.google.com/maps/search/?api=1&query=${coordinates}`}
@@ -469,7 +530,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 <Action
                   classes={classes}
                   cx={cx}
-                  icon={<InfoOutlinedIcon />}
+                  icon={<SolarInfoDuotone />}
                   label={t('deviceCardDetails')}
                   onClick={() => navigate(`/position/${position.id}`)}
                   disabled={!position}
