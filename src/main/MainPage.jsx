@@ -114,7 +114,12 @@ const MainPage = () => {
   const [filterSort, setFilterSort] = usePersistedState('filterSort', '');
   const [filterMap, setFilterMap] = usePersistedState('filterMap', false);
 
-  const [devicesOpen, setDevicesOpen] = useState(desktop);
+  const listOpen = useSelector((state) => state.devices.listOpen);
+  const devicesOpen = listOpen ?? desktop;
+  const setDevicesOpen = useCallback(
+    (open) => dispatch(devicesActions.setListOpen(open)),
+    [dispatch],
+  );
   const [eventsOpen, setEventsOpen] = useState(false);
 
   const onEventsClick = useCallback(() => setEventsOpen(true), [setEventsOpen]);
@@ -123,7 +128,7 @@ const MainPage = () => {
     if (!desktop && mapOnSelect && selectedDeviceId) {
       setDevicesOpen(false);
     }
-  }, [desktop, mapOnSelect, selectedDeviceId]);
+  }, [desktop, mapOnSelect, selectedDeviceId, setDevicesOpen]);
 
   useFilter(
     keyword,
@@ -202,6 +207,7 @@ const MainPage = () => {
           position={selectedPosition}
           onClose={() => dispatch(devicesActions.selectId(null))}
           desktopPadding={theme.dimensions.drawerWidthDesktop}
+          attachToNav
         />
       )}
     </div>

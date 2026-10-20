@@ -23,8 +23,6 @@ import { makeStyles } from 'tss-react/mui';
 import { alpha, useTheme } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import { brandColor } from '../common/theme/brand';
-import MapIcon from '@mui/icons-material/Map';
-import DnsIcon from '@mui/icons-material/Dns';
 import AddIcon from '@mui/icons-material/Add';
 import TuneIcon from '@mui/icons-material/Tune';
 import { useTranslation } from '../common/components/LocalizationProvider';
@@ -108,9 +106,6 @@ const MainToolbar = ({
 
   return (
     <Toolbar ref={toolbarRef} className={classes.toolbar}>
-      <IconButton edge="start" onClick={() => setDevicesOpen(!devicesOpen)}>
-        {devicesOpen ? <MapIcon /> : <DnsIcon />}
-      </IconButton>
       <OutlinedInput
         ref={inputRef}
         className={classes.search}

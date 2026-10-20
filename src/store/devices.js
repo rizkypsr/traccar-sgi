@@ -6,6 +6,8 @@ const { reducer, actions } = createSlice({
     items: {},
     selectedId: null,
     follow: false,
+    // device list visibility on the main page; null until first set (defaults to open on desktop)
+    listOpen: null,
     loaded: false,
   },
   reducers: {
@@ -21,6 +23,9 @@ const { reducer, actions } = createSlice({
       state.selectTime = Date.now();
       state.selectedId = action.payload;
       state.follow = false;
+    },
+    setListOpen(state, action) {
+      state.listOpen = action.payload;
     },
     toggleFollow(state) {
       state.follow = !state.follow;

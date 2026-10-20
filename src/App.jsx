@@ -12,8 +12,10 @@ import TermsDialog from './common/components/TermsDialog';
 import Loader from './common/components/Loader';
 import fetchOrThrow from './common/util/fetchOrThrow';
 
-// Full-screen map pages run under the floating bottom navigation on mobile
-const mapRoutes = ['/', '/replay'];
+// The mobile bottom navigation only appears on the main sections; detail pages
+// (replay, position, event, geofences, ...) have their own back button instead
+const isMainSection = (pathname) =>
+  pathname === '/' || pathname.startsWith('/settings') || pathname.startsWith('/reports');
 
 const useStyles = makeStyles()((theme) => ({
   page: {
@@ -29,7 +31,6 @@ const useStyles = makeStyles()((theme) => ({
     right: 0,
     bottom: 0,
     zIndex: 4,
-    padding: theme.spacing(1),
     pointerEvents: 'none',
     '& > *': {
       pointerEvents: 'auto',
@@ -48,7 +49,9 @@ const App = () => {
   const location = useLocation();
 
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
-  const fullScreenMap = mapRoutes.includes(location.pathname);
+  const showMenu = !desktop && isMainSection(location.pathname);
+  // the main map runs full screen under the floating bottom navigation
+  const fullScreenMap = location.pathname === '/';
 
   const newServer = useSelector((state) => state.session.server.newServer);
   const termsUrl = useSelector((state) => state.session.server.attributes.termsUrl);
@@ -93,10 +96,10 @@ const App = () => {
       <SocketController />
       <CachingController />
       <MotionController />
-      <div className={cx(classes.page, !desktop && !fullScreenMap && classes.pagePadded)}>
+      <div className={cx(classes.page, showMenu && !fullScreenMap && classes.pagePadded)}>
         <Outlet />
       </div>
-      {!desktop && (
+      {showMenu && (
         <>
           {fullScreenMap && (
             <GlobalStyles

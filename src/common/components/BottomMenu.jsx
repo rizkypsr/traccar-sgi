@@ -9,18 +9,21 @@ import {
   MenuItem,
   Typography,
   Badge,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 
 import {
   SolarDocumentDuotone,
+  SolarServerDuotone,
   SolarLogoutDuotone,
   SolarMapDuotone,
   SolarSettingsDuotone,
   SolarUserDuotone,
 } from './SolarIcons';
 
-import { sessionActions } from '../../store';
+import { devicesActions, sessionActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
 import { useRestriction } from '../util/permissions';
 import { nativePostMessage } from './NativeInterface';
@@ -28,11 +31,17 @@ import { brandColor } from '../theme/brand';
 
 const useStyles = makeStyles()((theme) => ({
   // floating pill bar; placement margins come from the parent wrapper
+  // floating rounded card on desktop, full-width bar attached to the screen edges otherwise
   root: {
     borderRadius: theme.spacing(2.5),
     overflow: 'hidden',
     backgroundColor: theme.palette.background.paper,
     boxShadow: theme.shadows[6],
+    [theme.breakpoints.down('md')]: {
+      borderRadius: 0,
+      boxShadow: `0 -1px 0 ${theme.palette.divider}, 0 -4px 12px rgba(0, 0, 0, 0.06)`,
+      paddingBottom: 'env(safe-area-inset-bottom)',
+    },
   },
   navigation: {
     backgroundColor: 'transparent',
@@ -79,6 +88,10 @@ const BottomMenu = () => {
   const user = useSelector((state) => state.session.user);
   const socket = useSelector((state) => state.session.socket);
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  // the device list replaces the old toolbar toggle; it defaults to open on desktop
+  const listOpen = useSelector((state) => state.devices.listOpen) ?? desktop;
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -93,7 +106,7 @@ const BottomMenu = () => {
       return 'reports';
     }
     if (location.pathname === '/') {
-      return 'map';
+      return listOpen ? 'devices' : 'map';
     }
     return null;
   };
@@ -137,7 +150,16 @@ const BottomMenu = () => {
 
   const handleSelection = (event, value) => {
     switch (value) {
+      case 'devices':
+        if (location.pathname === '/' && listOpen) {
+          dispatch(devicesActions.setListOpen(false));
+        } else {
+          dispatch(devicesActions.setListOpen(true));
+          navigate('/');
+        }
+        break;
       case 'map':
+        dispatch(devicesActions.setListOpen(false));
         navigate('/');
         break;
       case 'reports': {
@@ -185,6 +207,12 @@ const BottomMenu = () => {
         showLabels
         className={classes.navigation}
       >
+        <BottomNavigationAction
+          className={classes.action}
+          label={t('deviceTitle')}
+          icon={icon(SolarServerDuotone)}
+          value="devices"
+        />
         <BottomNavigationAction
           className={classes.action}
           label={t('mapTitle')}

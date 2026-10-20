@@ -1,10 +1,13 @@
 import { useTheme } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { SolarArrowLeftLinear } from './SolarIcons';
 
 const BackIcon = () => {
   const theme = useTheme();
-  return theme.direction === 'rtl' ? <ArrowForwardIcon /> : <ArrowBackIcon />;
+  return (
+    <SolarArrowLeftLinear
+      sx={theme.direction === 'rtl' ? { transform: 'scaleX(-1)' } : undefined}
+    />
+  );
 };
 
 export default BackIcon;
