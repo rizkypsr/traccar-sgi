@@ -8,7 +8,7 @@ import MapSpeedLegend from './control/MapSpeedLegend';
 const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
 const onMouseLeave = () => (map.getCanvas().style.cursor = '');
 
-const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
+const MapRoutePoints = ({ positions, onClick, showSpeedControl, arrows }) => {
   const onMarkerClick = useCallback(
     (event) => {
       event.preventDefault();
@@ -27,16 +27,29 @@ const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
     layers: [
       {
         type: 'symbol',
-        paint: {
-          'text-color': ['get', 'color'],
-        },
-        layout: {
-          'text-font': findFonts(map),
-          'text-size': 12,
-          'text-field': '▲',
-          'text-allow-overlap': true,
-          'text-rotate': ['get', 'rotation'],
-        },
+        // arrows mode: white direction arrows that thin out on collision so the line stays visible
+        ...(arrows
+          ? {
+              layout: {
+                'icon-image': 'route-arrow',
+                'icon-rotate': ['get', 'rotation'],
+                'icon-rotation-alignment': 'map',
+                'icon-allow-overlap': false,
+                'icon-padding': 24,
+              },
+            }
+          : {
+              paint: {
+                'text-color': ['get', 'color'],
+              },
+              layout: {
+                'text-font': findFonts(map),
+                'text-size': 12,
+                'text-field': '▲',
+                'text-allow-overlap': true,
+                'text-rotate': ['get', 'rotation'],
+              },
+            }),
         on: {
           mouseenter: onMouseEnter,
           mouseleave: onMouseLeave,
@@ -44,7 +57,7 @@ const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
         },
       },
     ],
-    layersDeps: [onMarkerClick],
+    layersDeps: [onMarkerClick, arrows],
     data: {
       type: 'FeatureCollection',
       features: positions.map((position, index) => ({

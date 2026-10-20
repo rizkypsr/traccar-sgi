@@ -50,6 +50,8 @@ const MapMarkers = ({ markers, showTitles, cluster, rotate, onClick, disabled })
         'icon-image': '{image}',
         'icon-size': iconScale,
         'icon-allow-overlap': true,
+        // markers never push other symbols (e.g. route arrows) out of the way
+        'icon-ignore-placement': true,
         'symbol-sort-key': ['get', 'id'],
       },
       ...(onClick
@@ -67,8 +69,10 @@ const MapMarkers = ({ markers, showTitles, cluster, rotate, onClick, disabled })
         'icon-image': ['coalesce', ['get', 'labelImage'], 'label'],
         'icon-text-fit': 'both',
         'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
         'text-field': '{title}',
         'text-allow-overlap': true,
+        'text-ignore-placement': true,
         'text-anchor': 'bottom',
         'text-offset': [0, -(24 * iconScale + 10) / 13],
         'text-font': findFonts(map),

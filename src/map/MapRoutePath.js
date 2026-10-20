@@ -4,7 +4,11 @@ import getSpeedColor from '../common/util/colors';
 import { useAttributePreference } from '../common/util/preferences';
 import { toMapCoordinates } from './core/mapUtil';
 
-const MapRoutePath = ({ positions }) => {
+// Solid mode draws one continuous line with a darker casing, like Google Maps directions
+const solidColor = '#1A73E8';
+const solidCasingColor = '#1558B0';
+
+const MapRoutePath = ({ positions, solid }) => {
   const reportColor = useSelector((state) => {
     const position = positions?.find(() => true);
     if (position) {
@@ -25,7 +29,21 @@ const MapRoutePath = ({ positions }) => {
   const minSpeed = positions.map((p) => p.speed).reduce((a, b) => Math.min(a, b), Infinity);
   const maxSpeed = positions.map((p) => p.speed).reduce((a, b) => Math.max(a, b), -Infinity);
   const features = [];
-  for (let i = 0; i < positions.length - 1; i += 1) {
+  if (solid && positions.length > 1) {
+    features.push({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: positions.map((p) => toMapCoordinates(p.longitude, p.latitude)),
+      },
+      properties: {
+        color: reportColor || solidColor,
+        width: Math.max(mapLineWidth, 5),
+        opacity: mapLineOpacity,
+      },
+    });
+  }
+  for (let i = 0; !solid && i < positions.length - 1; i += 1) {
     features.push({
       type: 'Feature',
       geometry: {
@@ -43,8 +61,23 @@ const MapRoutePath = ({ positions }) => {
     });
   }
 
+  const casing = {
+    key: 'casing',
+    type: 'line',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round',
+    },
+    paint: {
+      'line-color': solidCasingColor,
+      'line-width': ['+', ['get', 'width'], 3],
+      'line-opacity': ['get', 'opacity'],
+    },
+  };
+
   useMapLayer({
     layers: [
+      ...(solid && !reportColor ? [casing] : []),
       {
         type: 'line',
         layout: {
@@ -58,12 +91,12 @@ const MapRoutePath = ({ positions }) => {
         },
       },
     ],
-    layersDeps: [],
+    layersDeps: [solid, reportColor],
     data: {
       type: 'FeatureCollection',
       features,
     },
-    dataDeps: [positions, reportColor, mapLineWidth, mapLineOpacity],
+    dataDeps: [positions, reportColor, mapLineWidth, mapLineOpacity, solid],
   });
 
   return null;

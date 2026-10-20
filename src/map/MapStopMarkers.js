@@ -41,6 +41,7 @@ const MapStopMarkers = ({ stops, selectedIndex, onClick }) => {
           'icon-image': ['concat', imagePrefix, ['to-string', ['+', ['get', 'index'], 1]]],
           'icon-anchor': 'bottom',
           'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
           'symbol-sort-key': ['get', 'sort'],
         },
         on: { mouseenter: onMouseEnter, mouseleave: onMouseLeave, click: onStopClick },
