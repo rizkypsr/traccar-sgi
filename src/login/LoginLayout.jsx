@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
+import { alpha, createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 import LogoImage from './LogoImage';
-import { brandColor } from '../common/theme/brand';
+import { brandColor, brandColorDark } from '../common/theme/brand';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -26,7 +26,7 @@ const useStyles = makeStyles()((theme) => ({
     position: 'relative',
     isolation: 'isolate',
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    boxShadow: '0 16px 48px rgba(120, 0, 10, 0.25)',
+    boxShadow: `0 16px 48px ${alpha(brandColorDark, 0.25)}`,
     // blur on a pseudo-element so the card doesn't become the containing block for fixed children
     '&::before': {
       content: '""',

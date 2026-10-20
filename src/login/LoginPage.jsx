@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, TextField, Link, Alert, IconButton, Tooltip, InputAdornment } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -9,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { sessionActions } from '../store';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import LoginLayout from './LoginLayout';
-import { brandColor, brandColorDark } from '../common/theme/brand';
+import { brandColor, brandColorDark, brandColorLight } from '../common/theme/brand';
 import usePersistedState from '../common/util/usePersistedState';
 import {
   generateLoginToken,
@@ -60,8 +61,8 @@ const useStyles = makeStyles()((theme) => ({
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
     color: '#FFFFFF',
-    background: `linear-gradient(180deg, #F2334A 0%, ${brandColor} 100%)`,
-    boxShadow: '0 8px 20px rgba(227, 30, 45, 0.35)',
+    background: `linear-gradient(180deg, ${brandColorLight} 0%, ${brandColor} 100%)`,
+    boxShadow: `0 8px 20px ${alpha(brandColor, 0.35)}`,
     '&:hover': {
       background: `linear-gradient(180deg, ${brandColor} 0%, ${brandColorDark} 100%)`,
     },
