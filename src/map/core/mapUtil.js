@@ -48,6 +48,45 @@ export const prepareDeviceIcon = (image, size) => {
   return context.getImageData(0, 0, width, height);
 };
 
+// Teardrop pin with a letter, anchored at its bottom tip
+export const preparePin = (color, letter) => {
+  const ratio = devicePixelRatio;
+  const width = 30;
+  const height = 40;
+  const radius = 12;
+  const cx = width / 2;
+  const cy = radius + 2;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+
+  const context = canvas.getContext('2d');
+  context.scale(ratio, ratio);
+
+  context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  context.shadowBlur = 3;
+  context.shadowOffsetY = 1;
+  context.fillStyle = color;
+  context.strokeStyle = '#FFFFFF';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.arc(cx, cy, radius, Math.PI * 0.8, Math.PI * 2.2);
+  context.lineTo(cx, height - 2);
+  context.closePath();
+  context.fill();
+  context.shadowColor = 'transparent';
+  context.stroke();
+
+  context.fillStyle = '#FFFFFF';
+  context.font = 'bold 13px Roboto, Arial, sans-serif';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(letter, cx, cy + 1);
+
+  return context.getImageData(0, 0, canvas.width, canvas.height);
+};
+
 // Stretchable rounded label background for icon-text-fit, with an optional status dot
 export const prepareLabelBackground = (dotColor) => {
   const ratio = devicePixelRatio;

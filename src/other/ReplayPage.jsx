@@ -13,6 +13,8 @@ import MapView from '../map/core/MapView';
 import MapRoutePath from '../map/MapRoutePath';
 import MapRoutePoints from '../map/MapRoutePoints';
 import MapPositionMarkers from '../map/MapPositionMarkers';
+import MapStopMarkers from '../map/MapStopMarkers';
+import StopCard from './StopCard';
 import { formatTime } from '../common/util/formatter';
 import ReportFilter from '../reports/components/ReportFilter';
 import { useTranslation } from '../common/components/LocalizationProvider';
@@ -45,6 +47,12 @@ const useStyles = makeStyles()((theme) => ({
   },
   title: {
     flexGrow: 1,
+  },
+  stopCard: {
+    marginTop: theme.spacing(1.5),
+    [theme.breakpoints.down('md')]: {
+      margin: theme.spacing(1),
+    },
   },
   slider: {
     width: '100%',
@@ -85,6 +93,8 @@ const ReplayPage = () => {
   const defaultDeviceId = useSelector((state) => state.devices.selectedId);
 
   const [positions, setPositions] = useState([]);
+  const [stops, setStops] = useState([]);
+  const [selectedStop, setSelectedStop] = useState(null);
   const [index, setIndex] = useState(0);
   const [selectedDeviceId, setSelectedDeviceId] = useState(defaultDeviceId);
   const [showCard, setShowCard] = useState(false);
@@ -109,6 +119,8 @@ const ReplayPage = () => {
   useEffect(() => {
     if (!from && !to) {
       setPositions([]);
+      setStops([]);
+      setSelectedStop(null);
     }
   }, [from, to, setPositions]);
 
@@ -138,6 +150,25 @@ const ReplayPage = () => {
     [setIndex],
   );
 
+  const onStopClick = useCallback(
+    (stopNumber) => {
+      const stop = stops[stopNumber];
+      setSelectedStop(stopNumber);
+      let stopIndex = positions.findIndex((position) => position.id === stop.positionId);
+      if (stopIndex < 0) {
+        const startTime = new Date(stop.startTime).getTime();
+        stopIndex = positions.findIndex(
+          (position) => new Date(position.fixTime).getTime() >= startTime,
+        );
+      }
+      if (stopIndex >= 0) {
+        setPlaying(false);
+        setIndex(stopIndex);
+      }
+    },
+    [positions, stops],
+  );
+
   const onMarkerClick = useCallback(
     (positionId) => {
       setShowCard(!!positionId);
@@ -152,10 +183,17 @@ const ReplayPage = () => {
       setSelectedDeviceId(deviceId);
       const query = new URLSearchParams({ deviceId, from, to });
       try {
-        const response = await fetchOrThrow(`/api/positions?${query.toString()}`);
+        const [response, stopsResponse] = await Promise.all([
+          fetchOrThrow(`/api/positions?${query.toString()}`),
+          fetchOrThrow(`/api/reports/stops?${query.toString()}`, {
+            headers: { Accept: 'application/json' },
+          }),
+        ]);
         setIndex(0);
         const positions = await response.json();
         setPositions(positions);
+        setStops(await stopsResponse.json());
+        setSelectedStop(null);
         if (!positions.length) {
           throw Error(t('sharedNoData'));
         }
@@ -179,6 +217,7 @@ const ReplayPage = () => {
         <MapGeofence />
         <MapRoutePath positions={positions} />
         <MapRoutePoints positions={positions} onClick={onPointClick} showSpeedControl />
+        <MapStopMarkers stops={stops} selectedIndex={selectedStop} onClick={onStopClick} />
         {index < positions.length && (
           <MapPositionMarkers
             positions={[positions[index]]}
@@ -254,6 +293,15 @@ const ReplayPage = () => {
             <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
           </div>
         </Paper>
+        {loaded && !filterOpen && selectedStop != null && stops[selectedStop] && (
+          <div className={classes.stopCard}>
+            <StopCard
+              stop={stops[selectedStop]}
+              number={selectedStop + 1}
+              onClose={() => setSelectedStop(null)}
+            />
+          </div>
+        )}
       </div>
       {showCard && index < positions.length && (
         <StatusCard
