@@ -10,19 +10,15 @@ import {
   Typography,
   Badge,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
-import DescriptionIcon from '@mui/icons-material/DescriptionRounded';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import SettingsIcon from '@mui/icons-material/SettingsRounded';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import MapIcon from '@mui/icons-material/MapRounded';
-import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
-import PersonIcon from '@mui/icons-material/PersonRounded';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlineRounded';
-import ExitToAppIcon from '@mui/icons-material/LogoutRounded';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import {
+  SolarDocumentDuotone,
+  SolarLogoutDuotone,
+  SolarMapDuotone,
+  SolarSettingsDuotone,
+  SolarUserDuotone,
+} from './SolarIcons';
 
 import { sessionActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
@@ -59,9 +55,6 @@ const useStyles = makeStyles()((theme) => ({
     '&.Mui-selected': {
       color: brandColor,
     },
-    '&.Mui-selected .navPill': {
-      backgroundColor: alpha(brandColor, 0.12),
-    },
   },
   pill: {
     display: 'flex',
@@ -70,9 +63,6 @@ const useStyles = makeStyles()((theme) => ({
     width: 52,
     height: 28,
     borderRadius: 14,
-    transition: theme.transitions.create('background-color', {
-      duration: theme.transitions.duration.shortest,
-    }),
   },
 }));
 
@@ -182,11 +172,9 @@ const BottomMenu = () => {
 
   const selection = currentSelection();
 
-  // filled icon for the active item, outlined otherwise
-  const icon = (value, ActiveIcon, InactiveIcon, wrap = (child) => child) => (
-    <span className={cx(classes.pill, 'navPill')}>
-      {wrap(selection === value ? <ActiveIcon /> : <InactiveIcon />)}
-    </span>
+  // bold duotone icons take the item color: grey when inactive, brand when active
+  const icon = (Icon, wrap = (child) => child) => (
+    <span className={cx(classes.pill, 'navPill')}>{wrap(<Icon />)}</span>
   );
 
   return (
@@ -200,7 +188,7 @@ const BottomMenu = () => {
         <BottomNavigationAction
           className={classes.action}
           label={t('mapTitle')}
-          icon={icon('map', MapIcon, MapOutlinedIcon, (child) => (
+          icon={icon(SolarMapDuotone, (child) => (
             <Badge color="error" variant="dot" overlap="circular" invisible={socket !== false}>
               {child}
             </Badge>
@@ -211,7 +199,7 @@ const BottomMenu = () => {
           <BottomNavigationAction
             className={classes.action}
             label={t('reportTitle')}
-            icon={icon('reports', DescriptionIcon, DescriptionOutlinedIcon)}
+            icon={icon(SolarDocumentDuotone)}
             value="reports"
           />
         )}
@@ -219,7 +207,7 @@ const BottomMenu = () => {
           <BottomNavigationAction
             className={classes.action}
             label={t('settingsTitle')}
-            icon={icon('settings', SettingsIcon, SettingsOutlinedIcon)}
+            icon={icon(SolarSettingsDuotone)}
             value="settings"
           />
         )}
@@ -227,14 +215,14 @@ const BottomMenu = () => {
           <BottomNavigationAction
             className={classes.action}
             label={t('loginLogout')}
-            icon={icon('logout', ExitToAppIcon, LogoutOutlinedIcon)}
+            icon={icon(SolarLogoutDuotone)}
             value="logout"
           />
         ) : (
           <BottomNavigationAction
             className={classes.action}
             label={t('settingsUser')}
-            icon={icon('account', PersonIcon, PersonOutlinedIcon)}
+            icon={icon(SolarUserDuotone)}
             value="account"
           />
         )}
