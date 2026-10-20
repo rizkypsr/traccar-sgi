@@ -28,6 +28,7 @@ const useStyles = makeStyles()((theme) => ({
       position: 'fixed',
       left: 0,
       top: 0,
+      gap: theme.spacing(1.5),
       height: `calc(100% - ${theme.spacing(3)})`,
       width: theme.dimensions.drawerWidthDesktop,
       margin: theme.spacing(1.5),
@@ -37,6 +38,24 @@ const useStyles = makeStyles()((theme) => ({
       height: '100%',
       width: '100%',
     },
+  },
+  // desktop: header and list form one rounded floating card while the list is open,
+  // the bottom navigation floats separately below it
+  panel: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+  },
+  sidebarCard: {
+    borderRadius: theme.spacing(2.5),
+    overflow: 'hidden',
+    boxShadow: theme.shadows[6],
+  },
+  floating: {
+    borderRadius: theme.spacing(2.5),
+    overflow: 'hidden',
+    boxShadow: theme.shadows[6],
   },
   header: {
     pointerEvents: 'auto',
@@ -65,7 +84,7 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 const MainPage = () => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   const dispatch = useDispatch();
   const theme = useTheme();
 
@@ -124,40 +143,47 @@ const MainPage = () => {
         </Suspense>
       )}
       <div className={classes.sidebar}>
-        <Paper square elevation={3} className={classes.header}>
-          <MainToolbar
-            filteredDevices={filteredDevices}
-            devicesOpen={devicesOpen}
-            setDevicesOpen={setDevicesOpen}
-            keyword={keyword}
-            setKeyword={setKeyword}
-            filter={filter}
-            setFilter={setFilter}
-            filterSort={filterSort}
-            setFilterSort={setFilterSort}
-            filterMap={filterMap}
-            setFilterMap={setFilterMap}
-          />
-        </Paper>
-        <div className={classes.middle}>
-          {!desktop && (
-            <div className={classes.contentMap}>
-              <Suspense fallback={null}>
-                <MainMap
-                  filteredPositions={filteredPositions}
-                  selectedPosition={selectedPosition}
-                  onEventsClick={onEventsClick}
-                />
-              </Suspense>
-            </div>
-          )}
+        <div className={cx(classes.panel, desktop && devicesOpen && classes.sidebarCard)}>
           <Paper
             square
-            className={classes.contentList}
-            style={devicesOpen ? {} : { visibility: 'hidden' }}
+            elevation={desktop ? 0 : 3}
+            className={cx(classes.header, desktop && !devicesOpen && classes.floating)}
           >
-            <DeviceList devices={filteredDevices} />
+            <MainToolbar
+              filteredDevices={filteredDevices}
+              devicesOpen={devicesOpen}
+              setDevicesOpen={setDevicesOpen}
+              keyword={keyword}
+              setKeyword={setKeyword}
+              filter={filter}
+              setFilter={setFilter}
+              filterSort={filterSort}
+              setFilterSort={setFilterSort}
+              filterMap={filterMap}
+              setFilterMap={setFilterMap}
+            />
           </Paper>
+          <div className={classes.middle}>
+            {!desktop && (
+              <div className={classes.contentMap}>
+                <Suspense fallback={null}>
+                  <MainMap
+                    filteredPositions={filteredPositions}
+                    selectedPosition={selectedPosition}
+                    onEventsClick={onEventsClick}
+                  />
+                </Suspense>
+              </div>
+            )}
+            <Paper
+              square
+              elevation={desktop ? 0 : 1}
+              className={classes.contentList}
+              style={devicesOpen ? {} : { visibility: 'hidden' }}
+            >
+              <DeviceList devices={filteredDevices} />
+            </Paper>
+          </div>
         </div>
         {desktop && (
           <div className={classes.footer}>

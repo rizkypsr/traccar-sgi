@@ -10,19 +10,74 @@ import {
   Typography,
   Badge,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { makeStyles } from 'tss-react/mui';
 
-import DescriptionIcon from '@mui/icons-material/Description';
-import SettingsIcon from '@mui/icons-material/Settings';
-import MapIcon from '@mui/icons-material/Map';
-import PersonIcon from '@mui/icons-material/Person';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import DescriptionIcon from '@mui/icons-material/DescriptionRounded';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import SettingsIcon from '@mui/icons-material/SettingsRounded';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import MapIcon from '@mui/icons-material/MapRounded';
+import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import PersonIcon from '@mui/icons-material/PersonRounded';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlineRounded';
+import ExitToAppIcon from '@mui/icons-material/LogoutRounded';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 
 import { sessionActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
 import { useRestriction } from '../util/permissions';
 import { nativePostMessage } from './NativeInterface';
+import { brandColor } from '../theme/brand';
+
+const useStyles = makeStyles()((theme) => ({
+  // floating pill bar; placement margins come from the parent wrapper
+  root: {
+    borderRadius: theme.spacing(2.5),
+    overflow: 'hidden',
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[6],
+  },
+  navigation: {
+    backgroundColor: 'transparent',
+  },
+  action: {
+    minWidth: 0,
+    padding: theme.spacing(0.75, 0.5),
+    color: theme.palette.text.secondary,
+    '& .MuiBottomNavigationAction-label': {
+      marginTop: theme.spacing(0.5),
+      fontSize: '0.7rem',
+      fontWeight: 500,
+      lineHeight: 1.2,
+      transition: 'none',
+    },
+    '& .MuiBottomNavigationAction-label.Mui-selected': {
+      fontSize: '0.7rem',
+      fontWeight: 700,
+    },
+    '&.Mui-selected': {
+      color: brandColor,
+    },
+    '&.Mui-selected .navPill': {
+      backgroundColor: alpha(brandColor, 0.12),
+    },
+  },
+  pill: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 52,
+    height: 28,
+    borderRadius: 14,
+    transition: theme.transitions.create('background-color', {
+      duration: theme.transitions.duration.shortest,
+    }),
+  },
+}));
 
 const BottomMenu = () => {
+  const { classes, cx } = useStyles();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -125,40 +180,63 @@ const BottomMenu = () => {
     }
   };
 
+  const selection = currentSelection();
+
+  // filled icon for the active item, outlined otherwise
+  const icon = (value, ActiveIcon, InactiveIcon, wrap = (child) => child) => (
+    <span className={cx(classes.pill, 'navPill')}>
+      {wrap(selection === value ? <ActiveIcon /> : <InactiveIcon />)}
+    </span>
+  );
+
   return (
-    <Paper square elevation={3}>
-      <BottomNavigation value={currentSelection()} onChange={handleSelection} showLabels>
+    <Paper square elevation={0} className={classes.root}>
+      <BottomNavigation
+        value={selection}
+        onChange={handleSelection}
+        showLabels
+        className={classes.navigation}
+      >
         <BottomNavigationAction
+          className={classes.action}
           label={t('mapTitle')}
-          icon={
+          icon={icon('map', MapIcon, MapOutlinedIcon, (child) => (
             <Badge color="error" variant="dot" overlap="circular" invisible={socket !== false}>
-              <MapIcon />
+              {child}
             </Badge>
-          }
+          ))}
           value="map"
         />
         {!disableReports && (
           <BottomNavigationAction
+            className={classes.action}
             label={t('reportTitle')}
-            icon={<DescriptionIcon />}
+            icon={icon('reports', DescriptionIcon, DescriptionOutlinedIcon)}
             value="reports"
           />
         )}
         {!readonly && (
           <BottomNavigationAction
+            className={classes.action}
             label={t('settingsTitle')}
-            icon={<SettingsIcon />}
+            icon={icon('settings', SettingsIcon, SettingsOutlinedIcon)}
             value="settings"
           />
         )}
         {readonly ? (
           <BottomNavigationAction
+            className={classes.action}
             label={t('loginLogout')}
-            icon={<ExitToAppIcon />}
+            icon={icon('logout', ExitToAppIcon, LogoutOutlinedIcon)}
             value="logout"
           />
         ) : (
-          <BottomNavigationAction label={t('settingsUser')} icon={<PersonIcon />} value="account" />
+          <BottomNavigationAction
+            className={classes.action}
+            label={t('settingsUser')}
+            icon={icon('account', PersonIcon, PersonOutlinedIcon)}
+            value="account"
+          />
         )}
       </BottomNavigation>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>

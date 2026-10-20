@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   AppBar,
   Breadcrumbs,
-  Divider,
   Drawer,
   IconButton,
   Toolbar,
@@ -33,20 +32,43 @@ const useStyles = makeStyles()((theme, { miniVariant }) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
+    borderRight: `1px solid ${theme.palette.divider}`,
     ...(miniVariant && {
       '& .MuiListItemButton-root': {
-        minHeight: 48,
+        minHeight: 44,
+        margin: theme.spacing(0.25, 1),
+        padding: theme.spacing(1),
+        justifyContent: 'center',
+      },
+      '& .MuiListItemIcon-root': {
+        minWidth: 0,
       },
       '& .MuiListItemText-root': {
         display: 'none',
       },
     }),
+    '& .MuiDivider-root': {
+      margin: theme.spacing(1, 2),
+    },
     '@media print': {
       display: 'none',
     },
   },
+  drawerHeader: {
+    gap: theme.spacing(1),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(1.5),
+    '& .MuiTypography-h6': {
+      fontWeight: 700,
+      fontSize: '1.125rem',
+    },
+  },
   mobileDrawer: {
     width: theme.dimensions.drawerWidthTablet,
+    paddingTop: theme.spacing(1),
+    '& .MuiDivider-root': {
+      margin: theme.spacing(1, 2),
+    },
     '@media print': {
       display: 'none',
     },
@@ -115,15 +137,10 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
           className={classes.desktopDrawer}
           slotProps={{ paper: { className: classes.desktopDrawer } }}
         >
-          <Toolbar>
+          <Toolbar className={classes.drawerHeader} disableGutters>
             {!miniVariant && (
               <>
-                <IconButton
-                  color="inherit"
-                  edge="start"
-                  sx={{ mr: 2 }}
-                  onClick={() => navigate('/')}
-                >
+                <IconButton color="inherit" onClick={() => navigate('/')}>
                   <BackIcon />
                 </IconButton>
                 <PageTitle breadcrumbs={breadcrumbs} />
@@ -131,8 +148,7 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
             )}
             <IconButton
               color="inherit"
-              edge="start"
-              sx={{ ml: miniVariant ? -2 : 'auto' }}
+              sx={{ ml: miniVariant ? -0.5 : 'auto' }}
               onClick={toggleDrawer}
             >
               {miniVariant !== (theme.direction === 'rtl') ? (
@@ -142,7 +158,6 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
               )}
             </IconButton>
           </Toolbar>
-          <Divider />
           {menu}
         </Drawer>
       ) : (

@@ -12,13 +12,15 @@ import TermsDialog from './common/components/TermsDialog';
 import Loader from './common/components/Loader';
 import fetchOrThrow from './common/util/fetchOrThrow';
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   page: {
     flexGrow: 1,
     overflow: 'auto',
   },
   menu: {
     zIndex: 4,
+    padding: theme.spacing(1),
+    backgroundColor: theme.palette.background.default,
     '@media print': {
       display: 'none',
     },

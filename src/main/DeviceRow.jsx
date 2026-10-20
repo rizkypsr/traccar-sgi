@@ -1,5 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
+import { brandColor } from '../common/theme/brand';
 import {
   IconButton,
   Tooltip,
@@ -64,8 +66,26 @@ const useStyles = makeStyles()((theme) => ({
   neutral: {
     color: theme.palette.neutral.main,
   },
-  selected: {
-    backgroundColor: theme.palette.action.selected,
+  row: {
+    height: 64,
+    margin: theme.spacing(0.5, 1),
+    padding: theme.spacing(0, 1, 0, 1.5),
+    borderRadius: theme.spacing(1.5),
+    transition: theme.transitions.create('background-color', {
+      duration: theme.transitions.duration.shortest,
+    }),
+    '&:hover': {
+      backgroundColor: alpha(brandColor, 0.05),
+    },
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: alpha(brandColor, 0.1),
+    },
+    '& .MuiListItemText-primary': {
+      fontWeight: 500,
+    },
+    '&.Mui-selected .MuiListItemText-primary': {
+      fontWeight: 700,
+    },
   },
 }));
 
@@ -128,7 +148,7 @@ const DeviceRow = ({ devices, index, style }) => {
         onClick={() => dispatch(devicesActions.selectId(item.id))}
         disabled={!admin && item.disabled}
         selected={selectedDeviceId === item.id}
-        className={selectedDeviceId === item.id ? classes.selected : null}
+        className={classes.row}
       >
         <ListItemAvatar>
           <Avatar variant="square" className={classes.avatar}>

@@ -20,7 +20,9 @@ import {
   Tooltip,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import SearchIcon from '@mui/icons-material/Search';
+import { brandColor } from '../common/theme/brand';
 import MapIcon from '@mui/icons-material/Map';
 import DnsIcon from '@mui/icons-material/Dns';
 import AddIcon from '@mui/icons-material/Add';
@@ -33,6 +35,34 @@ const useStyles = makeStyles()((theme) => ({
   toolbar: {
     display: 'flex',
     gap: theme.spacing(1),
+  },
+  search: {
+    '&&': {
+      height: 40,
+      borderRadius: 20,
+      paddingLeft: theme.spacing(1.5),
+      backgroundColor: alpha(theme.palette.text.primary, 0.05),
+      transition: theme.transitions.create(['background-color', 'box-shadow'], {
+        duration: theme.transitions.duration.shortest,
+      }),
+    },
+    '& .MuiOutlinedInput-notchedOutline': {
+      border: 'none',
+    },
+    '&&.Mui-focused': {
+      backgroundColor: theme.palette.background.paper,
+      boxShadow: `0 0 0 2px ${alpha(brandColor, 0.45)}`,
+    },
+    '& .MuiInputAdornment-positionStart': {
+      color: theme.palette.text.secondary,
+    },
+  },
+  add: {
+    backgroundColor: alpha(brandColor, 0.1),
+    color: brandColor,
+    '&:hover': {
+      backgroundColor: alpha(brandColor, 0.18),
+    },
   },
   filterPanel: {
     display: 'flex',
@@ -83,7 +113,13 @@ const MainToolbar = ({
       </IconButton>
       <OutlinedInput
         ref={inputRef}
+        className={classes.search}
         placeholder={t('sharedSearchDevices')}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon fontSize="small" />
+          </InputAdornment>
+        }
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
         onFocus={() => setDevicesAnchorEl(toolbarRef.current)}
@@ -212,7 +248,12 @@ const MainToolbar = ({
           </FormGroup>
         </div>
       </Popover>
-      <IconButton edge="end" onClick={() => navigate('/settings/device')} disabled={deviceReadonly}>
+      <IconButton
+        edge="end"
+        className={classes.add}
+        onClick={() => navigate('/settings/device')}
+        disabled={deviceReadonly}
+      >
         <Tooltip
           open={!deviceReadonly && devicesLoaded && Object.keys(devices).length === 0}
           title={t('deviceRegisterFirst')}
