@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { ThemeProvider, useMediaQuery } from '@mui/material';
+import { ThemeProvider } from '@mui/material';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
@@ -22,11 +22,9 @@ const AppThemeProvider = ({ children }) => {
   const server = useSelector((state) => state.session.server);
   const { direction } = useLocalization();
 
-  const serverDarkMode = server?.attributes?.darkMode;
-  const preferDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const darkMode = serverDarkMode !== undefined ? serverDarkMode : preferDarkMode;
-
-  const themeInstance = theme(server, darkMode, direction);
+  // the IDGPS design is light-only (white cards on the brand gradient), so system and
+  // server dark mode are ignored
+  const themeInstance = theme(server, false, direction);
 
   return (
     <CacheProvider value={cache[direction]}>
