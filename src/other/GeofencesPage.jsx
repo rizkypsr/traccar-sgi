@@ -15,6 +15,7 @@ import { messagesActions } from '../store';
 import MapScale from '../map/MapScale';
 import BackIcon from '../common/components/BackIcon';
 import fetchOrThrow from '../common/util/fetchOrThrow';
+import { BrandPage } from '../common/theme/BrandSurface';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -91,44 +92,46 @@ const GeofencesPage = () => {
   };
 
   return (
-    <div className={classes.root}>
-      <div className={classes.content}>
-        <Paper square className={classes.drawer}>
-          <Toolbar>
-            <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
-              <BackIcon />
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              {t('sharedGeofences')}
-            </Typography>
-            <label htmlFor="upload-gpx">
-              <input
-                accept=".gpx"
-                id="upload-gpx"
-                type="file"
-                className={classes.fileInput}
-                onChange={handleFile}
-              />
-              <IconButton edge="end" component="span" onClick={() => {}}>
-                <Tooltip title={t('sharedUpload')}>
-                  <UploadFileIcon />
-                </Tooltip>
+    <BrandPage>
+      <div className={classes.root}>
+        <div className={classes.content}>
+          <Paper square className={classes.drawer}>
+            <Toolbar>
+              <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
+                <BackIcon />
               </IconButton>
-            </label>
-          </Toolbar>
-          <Divider />
-          <GeofencesList onGeofenceSelected={setSelectedGeofenceId} />
-        </Paper>
-        <div className={classes.mapContainer}>
-          <MapView>
-            <MapGeofenceEdit selectedGeofenceId={selectedGeofenceId} />
-          </MapView>
-          <MapScale />
-          <MapCurrentLocation />
-          <MapGeocoder />
+              <Typography variant="h6" className={classes.title}>
+                {t('sharedGeofences')}
+              </Typography>
+              <label htmlFor="upload-gpx">
+                <input
+                  accept=".gpx"
+                  id="upload-gpx"
+                  type="file"
+                  className={classes.fileInput}
+                  onChange={handleFile}
+                />
+                <IconButton edge="end" component="span" onClick={() => {}}>
+                  <Tooltip title={t('sharedUpload')}>
+                    <UploadFileIcon />
+                  </Tooltip>
+                </IconButton>
+              </label>
+            </Toolbar>
+            <Divider />
+            <GeofencesList onGeofenceSelected={setSelectedGeofenceId} />
+          </Paper>
+          <div className={classes.mapContainer}>
+            <MapView>
+              <MapGeofenceEdit selectedGeofenceId={selectedGeofenceId} />
+            </MapView>
+            <MapScale />
+            <MapCurrentLocation />
+            <MapGeocoder />
+          </div>
         </div>
       </div>
-    </div>
+    </BrandPage>
   );
 };
 

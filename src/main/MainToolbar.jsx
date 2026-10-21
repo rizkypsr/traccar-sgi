@@ -21,10 +21,12 @@ import {
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { alpha, useTheme } from '@mui/material/styles';
-import SearchIcon from '@mui/icons-material/Search';
 import { brandColor } from '../common/theme/brand';
-import AddIcon from '@mui/icons-material/Add';
-import TuneIcon from '@mui/icons-material/Tune';
+import {
+  SolarAddCircleDuotone,
+  SolarMagnifierLinear,
+  SolarTuningDuotone,
+} from '../common/components/SolarIcons';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useDeviceReadonly } from '../common/util/permissions';
 import DeviceRow from './DeviceRow';
@@ -112,7 +114,7 @@ const MainToolbar = ({
         placeholder={t('sharedSearchDevices')}
         startAdornment={
           <InputAdornment position="start">
-            <SearchIcon fontSize="small" />
+            <SolarMagnifierLinear fontSize="small" />
           </InputAdornment>
         }
         value={keyword}
@@ -129,7 +131,7 @@ const MainToolbar = ({
                   !filter.statuses.length && !filter.groups.length && !filter.geofences.length
                 }
               >
-                <TuneIcon fontSize="small" />
+                <SolarTuningDuotone fontSize="small" />
               </Badge>
             </IconButton>
           </InputAdornment>
@@ -254,7 +256,7 @@ const MainToolbar = ({
           title={t('deviceRegisterFirst')}
           arrow
         >
-          <AddIcon />
+          <SolarAddCircleDuotone />
         </Tooltip>
       </IconButton>
     </Toolbar>

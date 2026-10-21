@@ -10,14 +10,9 @@ import {
   ListItemText,
   ListItemButton,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import BatteryFullIcon from '@mui/icons-material/BatteryFull';
-import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
-import Battery60Icon from '@mui/icons-material/Battery60';
-import BatteryCharging60Icon from '@mui/icons-material/BatteryCharging60';
-import Battery20Icon from '@mui/icons-material/Battery20';
-import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
-import ErrorIcon from '@mui/icons-material/Error';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { devicesActions } from '../store';
@@ -27,12 +22,18 @@ import {
   formatPercentage,
   formatStatus,
   getDeviceState,
-  getStatusColor,
 } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
-import { deviceIconUrl } from '../map/core/preloadImages';
+import { deviceIconUrl, deviceStateColors } from '../map/core/preloadImages';
+import {
+  SolarBatteryChargeDuotone,
+  SolarBatteryDuotone,
+  SolarBatteryHalfDuotone,
+  SolarBatteryLowDuotone,
+  SolarDangerDuotone,
+  SolarKeyDuotone,
+} from '../common/components/SolarIcons';
 import { useAdministrator } from '../common/util/permissions';
-import EngineIcon from '../resources/images/data/engine.svg?react';
 import { useAttributePreference } from '../common/util/preferences';
 import GeofencesValue from '../common/components/GeofencesValue';
 import DriverValue from '../common/components/DriverValue';
@@ -40,57 +41,88 @@ import MotionBar from './components/MotionBar';
 
 dayjs.extend(relativeTime);
 
-const useStyles = makeStyles()((theme) => ({
-  avatar: {
-    backgroundColor: 'transparent',
-  },
-  icon: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-  },
-  batteryText: {
-    fontSize: '0.75rem',
-    fontWeight: 'normal',
-    lineHeight: '0.875rem',
-  },
-  success: {
-    color: theme.palette.success.main,
-  },
-  warning: {
-    color: theme.palette.warning.main,
-  },
-  error: {
-    color: theme.palette.error.main,
-  },
-  neutral: {
-    color: theme.palette.neutral.main,
-  },
-  row: {
-    height: 64,
-    margin: theme.spacing(0.5, 1),
-    padding: theme.spacing(0, 1, 0, 1.5),
-    borderRadius: theme.spacing(1.5),
-    transition: theme.transitions.create('background-color', {
-      duration: theme.transitions.duration.shortest,
-    }),
-    '&:hover': {
-      backgroundColor: alpha(brandColor, 0.05),
+// onGradient: the mobile list sits on the brand gradient, so content switches to white tones
+const useStyles = makeStyles()((theme, { onGradient }) => {
+  const white = theme.palette.common.white;
+  return {
+    avatar: {
+      backgroundColor: 'transparent',
     },
-    '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: alpha(brandColor, 0.1),
+    icon: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
     },
-    '& .MuiListItemText-primary': {
-      fontWeight: 500,
+    batteryText: {
+      fontSize: '0.75rem',
+      fontWeight: 'normal',
+      lineHeight: '0.875rem',
     },
-    '&.Mui-selected .MuiListItemText-primary': {
-      fontWeight: 700,
+    // status colors shared with map labels and the device card
+    success: {
+      color: onGradient ? white : deviceStateColors.moving,
     },
-  },
-}));
+    warning: {
+      color: onGradient ? alpha(white, 0.85) : '#F59E0B',
+    },
+    error: {
+      color: onGradient ? '#FFE08A' : brandColor,
+    },
+    neutral: {
+      color: onGradient ? alpha(white, 0.6) : deviceStateColors.offline,
+    },
+    statusIcon: {
+      fontSize: 18,
+    },
+    row: {
+      height: 64,
+      margin: theme.spacing(0.5, 1),
+      padding: theme.spacing(0, 1, 0, 1.5),
+      borderRadius: theme.spacing(1.5),
+      transition: theme.transitions.create('background-color', {
+        duration: theme.transitions.duration.shortest,
+      }),
+      '&:hover': {
+        backgroundColor: onGradient ? alpha(white, 0.1) : alpha(brandColor, 0.05),
+      },
+      '&.Mui-selected, &.Mui-selected:hover': {
+        backgroundColor: onGradient ? alpha(white, 0.18) : alpha(brandColor, 0.1),
+      },
+      '& .MuiListItemText-primary': {
+        fontWeight: 500,
+        ...(onGradient && { color: white }),
+      },
+      '& .MuiListItemText-secondary': {
+        ...(onGradient && { color: alpha(white, 0.8) }),
+      },
+      '&.Mui-selected .MuiListItemText-primary': {
+        fontWeight: 700,
+      },
+    },
+  };
+});
+
+const batteryIcon = (attributes, classes, cx) => {
+  const level = attributes.batteryLevel;
+  const levelClass =
+    (level > 70 && classes.success) || (level > 30 && classes.warning) || classes.error;
+  const className = cx(classes.statusIcon, levelClass);
+  if (attributes.charge) {
+    return <SolarBatteryChargeDuotone className={className} />;
+  }
+  if (level > 70) {
+    return <SolarBatteryDuotone className={className} />;
+  }
+  if (level > 30) {
+    return <SolarBatteryHalfDuotone className={className} />;
+  }
+  return <SolarBatteryLowDuotone className={className} />;
+};
 
 const DeviceRow = ({ devices, index, style }) => {
-  const { classes } = useStyles();
+  const theme = useTheme();
+  const onGradient = useMediaQuery(theme.breakpoints.down('md'));
+  const { classes, cx } = useStyles({ onGradient });
   const dispatch = useDispatch();
   const t = useTranslation();
 
@@ -136,7 +168,9 @@ const DeviceRow = ({ devices, index, style }) => {
             {' • '}
           </>
         )}
-        <span className={classes[getStatusColor(item.status)]}>{status}</span>
+        <span className={item.status === 'online' ? classes.success : classes.neutral}>
+          {status}
+        </span>
       </>
     );
   };
@@ -176,7 +210,7 @@ const DeviceRow = ({ devices, index, style }) => {
             {position.attributes.hasOwnProperty('alarm') && (
               <Tooltip title={`${t('eventAlarm')}: ${formatAlarm(position.attributes.alarm, t)}`}>
                 <IconButton size="small">
-                  <ErrorIcon fontSize="small" className={classes.error} />
+                  <SolarDangerDuotone className={cx(classes.statusIcon, classes.error)} />
                 </IconButton>
               </Tooltip>
             )}
@@ -185,11 +219,12 @@ const DeviceRow = ({ devices, index, style }) => {
                 title={`${t('positionIgnition')}: ${formatBoolean(position.attributes.ignition, t)}`}
               >
                 <IconButton size="small">
-                  {position.attributes.ignition ? (
-                    <EngineIcon width={20} height={20} className={classes.success} />
-                  ) : (
-                    <EngineIcon width={20} height={20} className={classes.neutral} />
-                  )}
+                  <SolarKeyDuotone
+                    className={cx(
+                      classes.statusIcon,
+                      position.attributes.ignition ? classes.success : classes.neutral,
+                    )}
+                  />
                 </IconButton>
               </Tooltip>
             )}
@@ -198,23 +233,7 @@ const DeviceRow = ({ devices, index, style }) => {
                 title={`${t('positionBatteryLevel')}: ${formatPercentage(position.attributes.batteryLevel)}`}
               >
                 <IconButton size="small">
-                  {(position.attributes.batteryLevel > 70 &&
-                    (position.attributes.charge ? (
-                      <BatteryChargingFullIcon fontSize="small" className={classes.success} />
-                    ) : (
-                      <BatteryFullIcon fontSize="small" className={classes.success} />
-                    ))) ||
-                    (position.attributes.batteryLevel > 30 &&
-                      (position.attributes.charge ? (
-                        <BatteryCharging60Icon fontSize="small" className={classes.warning} />
-                      ) : (
-                        <Battery60Icon fontSize="small" className={classes.warning} />
-                      ))) ||
-                    (position.attributes.charge ? (
-                      <BatteryCharging20Icon fontSize="small" className={classes.error} />
-                    ) : (
-                      <Battery20Icon fontSize="small" className={classes.error} />
-                    ))}
+                  {batteryIcon(position.attributes, classes, cx)}
                 </IconButton>
               </Tooltip>
             )}

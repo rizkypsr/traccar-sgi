@@ -12,73 +12,79 @@ import {
 } from '../common/components/SolarIcons';
 import { deviceStateColors } from '../map/core/preloadImages';
 import { brandColor } from '../common/theme/brand';
+import { accentColor, brandGradient } from '../common/theme/BrandSurface';
 
-const useStyles = makeStyles()((theme) => ({
-  card: {
-    width: '100%',
-    maxWidth: 280,
-    padding: theme.spacing(1, 1, 1, 1.25),
-    borderRadius: theme.spacing(1.75),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.75),
-  },
-  badge: {
-    flexShrink: 0,
-    width: 22,
-    height: 22,
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: theme.palette.common.white,
-    backgroundColor: deviceStateColors.parking,
-    fontSize: '0.75rem',
-    fontWeight: 700,
-  },
-  title: {
-    fontWeight: 700,
-  },
-  duration: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.25),
-    color: brandColor,
-    fontWeight: 600,
-    '& svg': {
-      fontSize: 14,
+const useStyles = makeStyles()((theme) => {
+  const onBrand = Boolean(theme.palette.onBrand);
+  const accent = accentColor(theme);
+  return {
+    card: {
+      background: onBrand ? brandGradient : theme.palette.background.paper,
+      width: '100%',
+      maxWidth: 280,
+      padding: theme.spacing(1, 1, 1, 1.25),
+      borderRadius: theme.spacing(1.75),
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.5),
     },
-  },
-  close: {
-    padding: 2,
-    '& svg': {
-      fontSize: 18,
+    header: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
     },
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.75),
-    padding: theme.spacing(0.5, 0.75),
-    borderRadius: theme.spacing(1),
-    backgroundColor: alpha(brandColor, 0.06),
-    '& > svg': {
+    badge: {
       flexShrink: 0,
-      color: brandColor,
-      fontSize: 16,
+      width: 22,
+      height: 22,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: onBrand ? brandColor : theme.palette.common.white,
+      backgroundColor: onBrand ? theme.palette.common.white : deviceStateColors.parking,
+      fontSize: '0.75rem',
+      fontWeight: 700,
     },
-  },
-  text: {
-    minWidth: 0,
-    lineHeight: 1.35,
-  },
-}));
+    title: {
+      fontWeight: 700,
+    },
+    duration: {
+      flex: 1,
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.25),
+      color: accent,
+      fontWeight: 600,
+      '& svg': {
+        fontSize: 14,
+      },
+    },
+    close: {
+      padding: 2,
+      '& svg': {
+        fontSize: 18,
+      },
+    },
+    row: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
+      padding: theme.spacing(0.5, 0.75),
+      borderRadius: theme.spacing(1),
+      backgroundColor: alpha(accent, onBrand ? 0.15 : 0.06),
+      '& > svg': {
+        flexShrink: 0,
+        color: accent,
+        fontSize: 16,
+      },
+    },
+    text: {
+      minWidth: 0,
+      lineHeight: 1.35,
+    },
+  };
+});
 
 const formatDuration = (value, t) => {
   const totalSeconds = Math.round(value / 1000);

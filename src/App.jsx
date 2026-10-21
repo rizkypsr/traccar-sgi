@@ -1,7 +1,9 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { GlobalStyles, useMediaQuery, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
+import { brandGradient } from './common/theme/BrandSurface';
 import BottomMenu from './common/components/BottomMenu';
 import SocketController from './SocketController';
 import CachingController from './CachingController';
@@ -96,6 +98,25 @@ const App = () => {
       <SocketController />
       <CachingController />
       <MotionController />
+      <GlobalStyles
+        styles={{
+          // map controls sit on the brand gradient on mobile, with icons tinted white
+          [theme.breakpoints.down('md')]: {
+            '.maplibregl-ctrl-group': {
+              background: brandGradient,
+            },
+            '.maplibregl-ctrl-group button + button': {
+              borderTopColor: alpha(theme.palette.common.white, 0.25),
+            },
+            '.maplibregl-ctrl-group .maplibregl-ctrl-icon, .mapbox-gl-draw_ctrl-draw-btn': {
+              filter: 'brightness(0) invert(1)',
+            },
+            '.maplibregl-ctrl-group button:not(:disabled):hover': {
+              backgroundColor: alpha(theme.palette.common.white, 0.15),
+            },
+          },
+        }}
+      />
       <div className={cx(classes.page, showMenu && !fullScreenMap && classes.pagePadded)}>
         <Outlet />
       </div>

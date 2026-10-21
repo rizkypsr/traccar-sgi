@@ -14,6 +14,7 @@ import { formatNotificationTitle } from '../common/util/formatter';
 import MapScale from '../map/MapScale';
 import BackIcon from '../common/components/BackIcon';
 import fetchOrThrow from '../common/util/fetchOrThrow';
+import { BrandPage } from '../common/theme/BrandSurface';
 
 const useStyles = makeStyles()(() => ({
   root: {
@@ -79,38 +80,40 @@ const EventPage = () => {
   );
 
   return (
-    <div className={classes.root}>
-      <AppBar color="inherit" position="static" className={classes.toolbar}>
-        <Toolbar>
-          <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => navigate('/')}>
-            <BackIcon />
-          </IconButton>
-          <Typography variant="h6">{event && formatType(event)}</Typography>
-        </Toolbar>
-      </AppBar>
-      <div className={classes.mapContainer}>
-        <MapView>
-          <MapGeofence />
-          {position && (
-            <MapPositionMarkers
-              positions={[position]}
-              onMarkerClick={onMarkerClick}
-              titleField="fixTime"
+    <BrandPage>
+      <div className={classes.root}>
+        <AppBar color="inherit" position="static" className={classes.toolbar}>
+          <Toolbar>
+            <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => navigate('/')}>
+              <BackIcon />
+            </IconButton>
+            <Typography variant="h6">{event && formatType(event)}</Typography>
+          </Toolbar>
+        </AppBar>
+        <div className={classes.mapContainer}>
+          <MapView>
+            <MapGeofence />
+            {position && (
+              <MapPositionMarkers
+                positions={[position]}
+                onMarkerClick={onMarkerClick}
+                titleField="fixTime"
+              />
+            )}
+          </MapView>
+          <MapScale />
+          {position && <MapCamera latitude={position.latitude} longitude={position.longitude} />}
+          {position && showCard && (
+            <StatusCard
+              deviceId={position.deviceId}
+              position={position}
+              onClose={() => setShowCard(false)}
+              disableActions
             />
           )}
-        </MapView>
-        <MapScale />
-        {position && <MapCamera latitude={position.latitude} longitude={position.longitude} />}
-        {position && showCard && (
-          <StatusCard
-            deviceId={position.deviceId}
-            position={position}
-            onClose={() => setShowCard(false)}
-            disableActions
-          />
-        )}
+        </div>
       </div>
-    </div>
+    </BrandPage>
   );
 };
 

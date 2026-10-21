@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { brandColor } from '../common/theme/brand';
+import BrandSurface, { brandGradient } from '../common/theme/BrandSurface';
 import * as maplibregl from 'maplibre-gl';
 import { makeStyles } from 'tss-react/mui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -56,6 +57,9 @@ const useStyles = makeStyles()((theme) => ({
     borderRadius: theme.spacing(2.5),
     overflow: 'hidden',
     boxShadow: theme.shadows[6],
+    [theme.breakpoints.down('md')]: {
+      background: brandGradient,
+    },
   },
   toolbar: {
     gap: theme.spacing(0.5),
@@ -73,6 +77,13 @@ const useStyles = makeStyles()((theme) => ({
     backgroundColor: alpha(brandColor, 0.1),
     '&:hover': {
       backgroundColor: alpha(brandColor, 0.16),
+    },
+    [theme.breakpoints.down('md')]: {
+      color: theme.palette.common.white,
+      backgroundColor: alpha(theme.palette.common.white, 0.2),
+      '&:hover': {
+        backgroundColor: alpha(theme.palette.common.white, 0.28),
+      },
     },
   },
   // bottom sheet on mobile, floating card under the sidebar column on desktop
@@ -296,63 +307,65 @@ const ReplayPage = () => {
         // keep the map's top-right controls below the floating header
         <GlobalStyles styles={{ '.maplibregl-ctrl-top-right': { marginTop: 64 } }} />
       )}
-      <div className={classes.sidebar}>
-        <Paper elevation={0} className={classes.card}>
-          <Toolbar className={classes.toolbar} disableGutters>
-            <IconButton onClick={() => navigate(-1)}>
-              <BackIcon />
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              {t('reportReplay')}
-            </Typography>
-            {loaded && (
-              <>
-                <IconButton onClick={handleDownload}>
-                  <SolarDownloadDuotone />
-                </IconButton>
-                <IconButton
-                  className={filterOpen ? classes.activeButton : null}
-                  onClick={() => setFilterOpen((open) => !open)}
-                >
-                  <SolarTuningDuotone />
-                </IconButton>
-              </>
+      <BrandSurface enabled={!desktop}>
+        <div className={classes.sidebar}>
+          <Paper elevation={0} className={classes.card}>
+            <Toolbar className={classes.toolbar} disableGutters>
+              <IconButton onClick={() => navigate(-1)}>
+                <BackIcon />
+              </IconButton>
+              <Typography variant="h6" className={classes.title}>
+                {t('reportReplay')}
+              </Typography>
+              {loaded && (
+                <>
+                  <IconButton onClick={handleDownload}>
+                    <SolarDownloadDuotone />
+                  </IconButton>
+                  <IconButton
+                    className={filterOpen ? classes.activeButton : null}
+                    onClick={() => setFilterOpen((open) => !open)}
+                  >
+                    <SolarTuningDuotone />
+                  </IconButton>
+                </>
+              )}
+            </Toolbar>
+          </Paper>
+          <Paper
+            elevation={0}
+            className={`${classes.content} ${classes.card}`}
+            style={{ display: loaded && !filterOpen ? 'none' : 'flex' }}
+          >
+            <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
+          </Paper>
+        </div>
+        {loaded && !filterOpen && (
+          <div className={classes.bottom}>
+            {selectedStop != null && stops[selectedStop] && (
+              <div className={classes.stopCard}>
+                <StopCard
+                  stop={stops[selectedStop]}
+                  number={selectedStop + 1}
+                  onClose={() => setSelectedStop(null)}
+                />
+              </div>
             )}
-          </Toolbar>
-        </Paper>
-        <Paper
-          elevation={0}
-          className={`${classes.content} ${classes.card}`}
-          style={{ display: loaded && !filterOpen ? 'none' : 'flex' }}
-        >
-          <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
-        </Paper>
-      </div>
-      {loaded && !filterOpen && (
-        <div className={classes.bottom}>
-          {selectedStop != null && stops[selectedStop] && (
-            <div className={classes.stopCard}>
-              <StopCard
-                stop={stops[selectedStop]}
-                number={selectedStop + 1}
-                onClose={() => setSelectedStop(null)}
+            <div ref={panelRef}>
+              <ReplayPanel
+                deviceName={deviceName}
+                positions={positions}
+                index={index}
+                setIndex={setIndex}
+                playing={playing}
+                setPlaying={setPlaying}
+                speed={speed}
+                setSpeed={setSpeed}
               />
             </div>
-          )}
-          <div ref={panelRef}>
-            <ReplayPanel
-              deviceName={deviceName}
-              positions={positions}
-              index={index}
-              setIndex={setIndex}
-              playing={playing}
-              setPlaying={setPlaying}
-              speed={speed}
-              setSpeed={setSpeed}
-            />
           </div>
-        </div>
-      )}
+        )}
+      </BrandSurface>
     </div>
   );
 };

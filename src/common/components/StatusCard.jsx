@@ -80,6 +80,7 @@ const categoryIcon = (category) => {
 };
 import fetchOrThrow from '../util/fetchOrThrow';
 import { brandColor } from '../theme/brand';
+import BrandSurface, { accentColor, brandGradient } from '../theme/BrandSurface';
 
 const stateLabels = {
   moving: 'deviceStateMoving',
@@ -87,208 +88,214 @@ const stateLabels = {
   offline: 'deviceStateOffline',
 };
 
-const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) => ({
-  root: {
-    pointerEvents: 'none',
-    position: 'fixed',
-    zIndex: 5,
-    left: '50%',
-    [theme.breakpoints.up('md')]: {
-      left: `calc(50% + ${desktopPadding} / 2)`,
-      bottom: theme.spacing(3),
-    },
-    transform: 'translateX(-50%)',
-    // mobile: full-width sheet attached to the bottom navigation (or the screen edge)
-    [theme.breakpoints.down('md')]: {
-      left: 0,
-      right: 0,
-      transform: 'none',
-      bottom: attachToNav
-        ? `calc(${theme.dimensions.bottomBarHeight}px + env(safe-area-inset-bottom))`
-        : 0,
-    },
-  },
-  card: {
-    pointerEvents: 'auto',
-    width: 440,
-    maxWidth: `calc(100vw - ${theme.spacing(4)})`,
-    padding: theme.spacing(1.25, 1.5, 1.5),
-    borderRadius: theme.spacing(2.5),
-    backgroundColor: theme.palette.background.paper,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-    [theme.breakpoints.down('md')]: {
-      width: '100%',
-      maxWidth: 'none',
-      borderRadius: theme.spacing(2.5, 2.5, 0, 0),
-      boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.12)',
-    },
-    [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(1, 1.25, 1.25),
-      gap: theme.spacing(0.75),
-    },
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    cursor: 'move',
-  },
-  glyph: {
-    flexShrink: 0,
-    fontSize: 22,
-    color,
-  },
-  photo: {
-    flexShrink: 0,
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
-    objectFit: 'cover',
-  },
-  title: {
-    flex: 1,
-    minWidth: 0,
-  },
-  name: {
-    fontWeight: 700,
-    lineHeight: 1.25,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  subtitle: {
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    columnGap: theme.spacing(1.5),
-  },
-  stateInline: {
-    [theme.breakpoints.up('sm')]: {
-      display: 'none',
-    },
-  },
-  stateSide: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
-    },
-  },
-  state: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.75),
-    color,
-    fontWeight: 700,
-    whiteSpace: 'nowrap',
-    '&::before': {
-      content: '""',
-      width: 8,
-      height: 8,
-      borderRadius: '50%',
-      backgroundColor: color,
-    },
-  },
-  stats: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: theme.spacing(0.75),
-  },
-  stat: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing(0.75),
-    padding: theme.spacing(0.75, 0.5),
-    borderRadius: theme.spacing(1.25),
-    backgroundColor: alpha(brandColor, 0.08),
-    minWidth: 0,
-    '& svg': {
-      color: brandColor,
-      fontSize: 16,
-    },
-    [theme.breakpoints.down('sm')]: {
-      flexDirection: 'column',
-      gap: 0,
-      '& svg': {
-        fontSize: 14,
+const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) => {
+  const onBrand = Boolean(theme.palette.onBrand);
+  const accent = accentColor(theme);
+  // on the brand surface status colors keep only the dot; glyph and text turn white
+  const stateColor = onBrand ? theme.palette.common.white : color;
+  return {
+    root: {
+      pointerEvents: 'none',
+      position: 'fixed',
+      zIndex: 5,
+      left: '50%',
+      [theme.breakpoints.up('md')]: {
+        left: `calc(50% + ${desktopPadding} / 2)`,
+        bottom: theme.spacing(3),
+      },
+      transform: 'translateX(-50%)',
+      // mobile: full-width sheet attached to the bottom navigation (or the screen edge)
+      [theme.breakpoints.down('md')]: {
+        left: 0,
+        right: 0,
+        transform: 'none',
+        bottom: attachToNav
+          ? `calc(${theme.dimensions.bottomBarHeight}px + env(safe-area-inset-bottom))`
+          : 0,
       },
     },
-  },
-  statText: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minWidth: 0,
-  },
-  statLabel: {
-    fontSize: '0.7rem',
-    lineHeight: 1.2,
-  },
-  statValue: {
-    fontWeight: 700,
-    fontSize: '0.9rem',
-    lineHeight: 1.2,
-    whiteSpace: 'nowrap',
-  },
-  address: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.75),
-    padding: theme.spacing(0.75, 1),
-    borderRadius: theme.spacing(1.25),
-    backgroundColor: alpha(theme.palette.text.primary, 0.06),
-    minWidth: 0,
-    '& svg': {
-      color: brandColor,
-      fontSize: 15,
+    card: {
+      pointerEvents: 'auto',
+      width: 440,
+      maxWidth: `calc(100vw - ${theme.spacing(4)})`,
+      padding: theme.spacing(1.25, 1.5, 1.5),
+      borderRadius: theme.spacing(2.5),
+      background: onBrand ? brandGradient : theme.palette.background.paper,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(1),
+      [theme.breakpoints.down('md')]: {
+        width: '100%',
+        maxWidth: 'none',
+        borderRadius: theme.spacing(2.5, 2.5, 0, 0),
+        boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.12)',
+      },
+      [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1, 1.25, 1.25),
+        gap: theme.spacing(0.75),
+      },
     },
-  },
-  addressText: {
-    minWidth: 0,
-    lineHeight: 1.35,
-    overflowWrap: 'anywhere',
-  },
-  actions: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(5, 1fr)',
-    gap: theme.spacing(0.75),
-  },
-  action: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.25),
-    padding: theme.spacing(0.75, 0.25),
-    borderRadius: theme.spacing(1.25),
-    backgroundColor: alpha(brandColor, 0.08),
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-    '& svg': {
-      color: brandColor,
-      fontSize: 16,
+    header: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      cursor: 'move',
     },
-    '&:hover': {
-      backgroundColor: alpha(brandColor, 0.16),
+    glyph: {
+      flexShrink: 0,
+      fontSize: 22,
+      color: stateColor,
     },
-    '&.Mui-disabled': {
-      opacity: 0.45,
+    photo: {
+      flexShrink: 0,
+      width: 32,
+      height: 32,
+      borderRadius: '50%',
+      objectFit: 'cover',
     },
-  },
-  actionActive: {
-    backgroundColor: brandColor,
-    color: theme.palette.common.white,
-    '& svg': {
-      color: theme.palette.common.white,
+    title: {
+      flex: 1,
+      minWidth: 0,
     },
-    '&:hover': {
-      backgroundColor: brandColor,
+    name: {
+      fontWeight: 700,
+      lineHeight: 1.25,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
     },
-  },
-  actionLabel: {
-    fontSize: '0.7rem',
-    lineHeight: 1.15,
-  },
-}));
+    subtitle: {
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      columnGap: theme.spacing(1.5),
+    },
+    stateInline: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
+    stateSide: {
+      [theme.breakpoints.down('sm')]: {
+        display: 'none',
+      },
+    },
+    state: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
+      color: stateColor,
+      fontWeight: 700,
+      whiteSpace: 'nowrap',
+      '&::before': {
+        content: '""',
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        backgroundColor: color,
+      },
+    },
+    stats: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: theme.spacing(0.75),
+    },
+    stat: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: theme.spacing(0.75),
+      padding: theme.spacing(0.75, 0.5),
+      borderRadius: theme.spacing(1.25),
+      backgroundColor: alpha(accent, onBrand ? 0.15 : 0.08),
+      minWidth: 0,
+      '& svg': {
+        color: accent,
+        fontSize: 16,
+      },
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        gap: 0,
+        '& svg': {
+          fontSize: 14,
+        },
+      },
+    },
+    statText: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      minWidth: 0,
+    },
+    statLabel: {
+      fontSize: '0.7rem',
+      lineHeight: 1.2,
+    },
+    statValue: {
+      fontWeight: 700,
+      fontSize: '0.9rem',
+      lineHeight: 1.2,
+      whiteSpace: 'nowrap',
+    },
+    address: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
+      padding: theme.spacing(0.75, 1),
+      borderRadius: theme.spacing(1.25),
+      backgroundColor: alpha(theme.palette.text.primary, 0.06),
+      minWidth: 0,
+      '& svg': {
+        color: accent,
+        fontSize: 15,
+      },
+    },
+    addressText: {
+      minWidth: 0,
+      lineHeight: 1.35,
+      overflowWrap: 'anywhere',
+    },
+    actions: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(5, 1fr)',
+      gap: theme.spacing(0.75),
+    },
+    action: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.25),
+      padding: theme.spacing(0.75, 0.25),
+      borderRadius: theme.spacing(1.25),
+      backgroundColor: alpha(accent, onBrand ? 0.15 : 0.08),
+      color: theme.palette.text.primary,
+      textAlign: 'center',
+      '& svg': {
+        color: accent,
+        fontSize: 16,
+      },
+      '&:hover': {
+        backgroundColor: alpha(accent, onBrand ? 0.25 : 0.16),
+      },
+      '&.Mui-disabled': {
+        opacity: 0.45,
+      },
+    },
+    actionActive: {
+      backgroundColor: accent,
+      color: onBrand ? brandColor : theme.palette.common.white,
+      '& svg': {
+        color: onBrand ? brandColor : theme.palette.common.white,
+      },
+      '&:hover': {
+        backgroundColor: accent,
+      },
+    },
+    actionLabel: {
+      fontSize: '0.7rem',
+      lineHeight: 1.15,
+    },
+  };
+});
 
 const Stat = ({ classes, icon, label, value }) => (
   <div className={classes.stat}>
@@ -309,7 +316,7 @@ const Action = ({ classes, cx, icon, label, active, ...props }) => (
   </ButtonBase>
 );
 
-const StatusCard = ({
+const StatusCardContent = ({
   deviceId,
   position,
   onClose,
@@ -604,6 +611,17 @@ const StatusCard = ({
         onResult={(removed) => handleRemove(removed)}
       />
     </>
+  );
+};
+
+// mobile: the card joins the gradient bottom navigation, so it renders on the brand surface
+const StatusCard = (props) => {
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  return (
+    <BrandSurface enabled={!desktop}>
+      <StatusCardContent {...props} />
+    </BrandSurface>
   );
 };
 

@@ -10,12 +10,15 @@ import {
   useTheme,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from './LocalizationProvider';
 import BackIcon from './BackIcon';
+import { SolarHamburgerLinear } from './SolarIcons';
+import BrandSurface, { brandGradient } from '../theme/BrandSurface';
+import { brandColor, brandColorDark, brandColorLight } from '../theme/brand';
 
 const useStyles = makeStyles()((theme, { miniVariant }) => ({
   root: {
@@ -23,6 +26,8 @@ const useStyles = makeStyles()((theme, { miniVariant }) => ({
     display: 'flex',
     [theme.breakpoints.down('md')]: {
       flexDirection: 'column',
+      // mobile pages sit entirely on the brand gradient
+      background: brandGradient,
     },
   },
   desktopDrawer: {
@@ -63,11 +68,25 @@ const useStyles = makeStyles()((theme, { miniVariant }) => ({
       fontSize: '1.125rem',
     },
   },
+  // mobile: gradient drawer and header matching the main page
   mobileDrawer: {
     width: theme.dimensions.drawerWidthTablet,
-    paddingTop: theme.spacing(1),
+    paddingTop: 'calc(env(safe-area-inset-top) + 8px)',
+    background: `linear-gradient(160deg, ${brandColorLight} 0%, ${brandColor} 55%, ${brandColorDark} 100%)`,
     '& .MuiDivider-root': {
       margin: theme.spacing(1, 2),
+      borderColor: alpha(theme.palette.common.white, 0.3),
+    },
+    '& .MuiListItemButton-root': {
+      color: alpha(theme.palette.common.white, 0.85),
+    },
+    '& .MuiListItemButton-root:hover': {
+      color: theme.palette.common.white,
+      backgroundColor: alpha(theme.palette.common.white, 0.1),
+    },
+    '& .MuiListItemButton-root.Mui-selected, & .MuiListItemButton-root.Mui-selected:hover': {
+      color: theme.palette.common.white,
+      backgroundColor: alpha(theme.palette.common.white, 0.2),
     },
     '@media print': {
       display: 'none',
@@ -75,6 +94,14 @@ const useStyles = makeStyles()((theme, { miniVariant }) => ({
   },
   mobileToolbar: {
     zIndex: 1,
+    color: theme.palette.common.white,
+    paddingTop: 'env(safe-area-inset-top)',
+    borderRadius: theme.spacing(0, 0, 3, 3),
+    background: `linear-gradient(135deg, ${brandColorLight} 0%, ${brandColor} 55%, ${brandColorDark} 100%)`,
+    boxShadow: `0 6px 18px ${alpha(brandColor, 0.3)}`,
+    '& .MuiTypography-root, & .MuiBreadcrumbs-separator': {
+      color: theme.palette.common.white,
+    },
     '@media print': {
       display: 'none',
     },
@@ -179,13 +206,15 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
               sx={{ mr: 2 }}
               onClick={() => setOpenDrawer(true)}
             >
-              <MenuIcon />
+              <SolarHamburgerLinear />
             </IconButton>
             <PageTitle breadcrumbs={breadcrumbs} />
           </Toolbar>
         </AppBar>
       )}
-      <div className={classes.content}>{children}</div>
+      <BrandSurface enabled={!desktop}>
+        <div className={classes.content}>{children}</div>
+      </BrandSurface>
     </div>
   );
 };

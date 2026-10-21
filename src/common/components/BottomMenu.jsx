@@ -27,11 +27,12 @@ import { devicesActions, sessionActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
 import { useRestriction } from '../util/permissions';
 import { nativePostMessage } from './NativeInterface';
-import { brandColor } from '../theme/brand';
+import { alpha } from '@mui/material/styles';
+import { brandColor, brandColorDark, brandColorLight } from '../theme/brand';
+import BrandSurface from '../theme/BrandSurface';
 
 const useStyles = makeStyles()((theme) => ({
-  // floating pill bar; placement margins come from the parent wrapper
-  // floating rounded card on desktop, full-width bar attached to the screen edges otherwise
+  // floating rounded card on desktop; on mobile a full-width gradient bar matching the header
   root: {
     borderRadius: theme.spacing(2.5),
     overflow: 'hidden',
@@ -39,7 +40,8 @@ const useStyles = makeStyles()((theme) => ({
     boxShadow: theme.shadows[6],
     [theme.breakpoints.down('md')]: {
       borderRadius: 0,
-      boxShadow: `0 -1px 0 ${theme.palette.divider}, 0 -4px 12px rgba(0, 0, 0, 0.06)`,
+      background: `linear-gradient(135deg, ${brandColorLight} 0%, ${brandColor} 55%, ${brandColorDark} 100%)`,
+      boxShadow: `0 -4px 16px ${alpha(brandColor, 0.25)}`,
       paddingBottom: 'env(safe-area-inset-bottom)',
     },
   },
@@ -63,6 +65,12 @@ const useStyles = makeStyles()((theme) => ({
     },
     '&.Mui-selected': {
       color: brandColor,
+    },
+    [theme.breakpoints.down('md')]: {
+      color: alpha(theme.palette.common.white, 0.75),
+      '&.Mui-selected': {
+        color: theme.palette.common.white,
+      },
     },
   },
   pill: {
@@ -255,14 +263,16 @@ const BottomMenu = () => {
           />
         )}
       </BottomNavigation>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-        <MenuItem onClick={handleAccount}>
-          <Typography color="textPrimary">{t('settingsUser')}</Typography>
-        </MenuItem>
-        <MenuItem onClick={handleLogout}>
-          <Typography color="error">{t('loginLogout')}</Typography>
-        </MenuItem>
-      </Menu>
+      <BrandSurface enabled={!desktop}>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+          <MenuItem onClick={handleAccount}>
+            <Typography color="textPrimary">{t('settingsUser')}</Typography>
+          </MenuItem>
+          <MenuItem onClick={handleLogout}>
+            <Typography color="error">{t('loginLogout')}</Typography>
+          </MenuItem>
+        </Menu>
+      </BrandSurface>
     </Paper>
   );
 };

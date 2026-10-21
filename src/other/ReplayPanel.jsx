@@ -15,6 +15,7 @@ import { formatTime } from '../common/util/formatter';
 import useAddress from '../common/util/useAddress';
 import { deviceStateColors } from '../map/core/preloadImages';
 import { brandColor } from '../common/theme/brand';
+import { accentColor, brandGradient } from '../common/theme/BrandSurface';
 import {
   SolarClockDuotone,
   SolarKeyDuotone,
@@ -27,172 +28,179 @@ import {
 
 export const playbackSpeeds = [1, 2, 3, 5];
 
-const useStyles = makeStyles()((theme) => ({
-  panel: {
-    borderRadius: theme.spacing(2.5, 2.5, 0, 0),
-    overflow: 'hidden',
-    [theme.breakpoints.up('md')]: {
-      borderRadius: theme.spacing(2.5),
+const useStyles = makeStyles()((theme) => {
+  const onBrand = Boolean(theme.palette.onBrand);
+  const accent = accentColor(theme);
+  const moving = onBrand ? theme.palette.common.white : deviceStateColors.moving;
+  return {
+    panel: {
+      background: onBrand ? brandGradient : theme.palette.background.paper,
+      borderRadius: theme.spacing(2.5, 2.5, 0, 0),
+      overflow: 'hidden',
+      [theme.breakpoints.up('md')]: {
+        borderRadius: theme.spacing(2.5),
+      },
     },
-  },
-  handle: {
-    width: '100%',
-    height: 14,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    '&::before': {
-      content: '""',
+    handle: {
+      width: '100%',
+      height: 14,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      '&::before': {
+        content: '""',
+        width: 36,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: theme.palette.divider,
+      },
+    },
+    section: {
+      padding: theme.spacing(0, 1.5, 1),
+    },
+    // play | slider + range | speed, with the controls centered on the slider block
+    player: {
+      display: 'grid',
+      gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+      alignItems: 'center',
+      columnGap: theme.spacing(1.25),
+    },
+    play: {
       width: 36,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: theme.palette.divider,
+      height: 36,
+      color: onBrand ? brandColor : theme.palette.common.white,
+      backgroundColor: accent,
+      '& svg': {
+        fontSize: 18,
+      },
+      '&:hover': {
+        backgroundColor: alpha(accent, 0.85),
+      },
+      '&.Mui-disabled': {
+        color: onBrand ? brandColor : theme.palette.common.white,
+        backgroundColor: alpha(accent, 0.4),
+      },
     },
-  },
-  section: {
-    padding: theme.spacing(0, 1.5, 1),
-  },
-  // play | slider + range | speed, with the controls centered on the slider block
-  player: {
-    display: 'grid',
-    gridTemplateColumns: 'auto minmax(0, 1fr) auto',
-    alignItems: 'center',
-    columnGap: theme.spacing(1.25),
-  },
-  play: {
-    width: 36,
-    height: 36,
-    color: theme.palette.common.white,
-    backgroundColor: brandColor,
-    '& svg': {
-      fontSize: 18,
+    sliderBox: {
+      padding: theme.spacing(0, 0.75),
     },
-    '&:hover': {
-      backgroundColor: alpha(brandColor, 0.85),
+    slider: {
+      display: 'block',
+      color: accent,
+      padding: theme.spacing(1, 0),
+      '& .MuiSlider-thumb': {
+        width: 12,
+        height: 12,
+      },
     },
-    '&.Mui-disabled': {
-      color: theme.palette.common.white,
-      backgroundColor: alpha(brandColor, 0.4),
+    range: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      margin: theme.spacing(-0.5, -0.75, 0),
+      fontSize: '0.65rem',
+      lineHeight: 1.2,
+      color: theme.palette.text.secondary,
     },
-  },
-  sliderBox: {
-    padding: theme.spacing(0, 0.75),
-  },
-  slider: {
-    display: 'block',
-    color: brandColor,
-    padding: theme.spacing(1, 0),
-    '& .MuiSlider-thumb': {
-      width: 12,
-      height: 12,
+    speedButton: {
+      minWidth: 40,
+      height: 28,
+      padding: theme.spacing(0, 1),
+      borderRadius: 14,
+      fontSize: '0.75rem',
+      fontWeight: 700,
+      color: accent,
+      backgroundColor: alpha(accent, onBrand ? 0.18 : 0.1),
     },
-  },
-  range: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    margin: theme.spacing(-0.5, -0.75, 0),
-    fontSize: '0.65rem',
-    lineHeight: 1.2,
-    color: theme.palette.text.secondary,
-  },
-  speedButton: {
-    minWidth: 40,
-    height: 28,
-    padding: theme.spacing(0, 1),
-    borderRadius: 14,
-    fontSize: '0.75rem',
-    fontWeight: 700,
-    color: brandColor,
-    backgroundColor: alpha(brandColor, 0.1),
-  },
-  summary: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.75),
-    marginTop: theme.spacing(1),
-    paddingTop: theme.spacing(0.75),
-    borderTop: `1px solid ${theme.palette.divider}`,
-  },
-  name: {
-    minWidth: 0,
-    fontSize: '0.8rem',
-    fontWeight: 700,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  speedChip: {
-    flexShrink: 0,
-    padding: theme.spacing(0, 0.75),
-    borderRadius: theme.spacing(0.75),
-    fontSize: '0.7rem',
-    fontWeight: 700,
-    lineHeight: 1.6,
-    color: deviceStateColors.moving,
-    backgroundColor: alpha(deviceStateColors.moving, 0.12),
-  },
-  distance: {
-    marginLeft: 'auto',
-    flexShrink: 0,
-  },
-  iconText: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-    fontSize: '0.7rem',
-    '& svg': {
-      fontSize: 15,
-      color: brandColor,
+    summary: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
+      marginTop: theme.spacing(1),
+      paddingTop: theme.spacing(0.75),
+      borderTop: `1px solid ${theme.palette.divider}`,
     },
-  },
-  details: {
-    maxHeight: '45vh',
-    overflowY: 'auto',
-  },
-  detailSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.75),
-    padding: theme.spacing(1, 1.5),
-    borderTop: `6px solid ${theme.palette.action.hover}`,
-  },
-  detailRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    fontSize: '0.75rem',
-    lineHeight: 1.4,
-    '& > svg': {
+    name: {
+      minWidth: 0,
+      fontSize: '0.8rem',
+      fontWeight: 700,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+    speedChip: {
       flexShrink: 0,
-      fontSize: 16,
-      color: brandColor,
+      padding: theme.spacing(0, 0.75),
+      borderRadius: theme.spacing(0.75),
+      fontSize: '0.7rem',
+      fontWeight: 700,
+      lineHeight: 1.6,
+      color: moving,
+      backgroundColor: alpha(moving, 0.12),
     },
-  },
-  point: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  pointBadge: {
-    flexShrink: 0,
-    width: 20,
-    height: 20,
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: theme.palette.common.white,
-    fontSize: '0.65rem',
-    fontWeight: 700,
-  },
-  pointText: {
-    minWidth: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    fontSize: '0.75rem',
-    lineHeight: 1.4,
-  },
-}));
+    distance: {
+      marginLeft: 'auto',
+      flexShrink: 0,
+    },
+    iconText: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.5),
+      fontSize: '0.7rem',
+      '& svg': {
+        fontSize: 15,
+        color: accent,
+      },
+    },
+    details: {
+      maxHeight: '45vh',
+      overflowY: 'auto',
+    },
+    detailSection: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.75),
+      padding: theme.spacing(1, 1.5),
+      borderTop: `6px solid ${theme.palette.action.hover}`,
+    },
+    detailRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      fontSize: '0.75rem',
+      lineHeight: 1.4,
+      '& > svg': {
+        flexShrink: 0,
+        fontSize: 16,
+        color: accent,
+      },
+    },
+    point: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+    },
+    pointBadge: {
+      flexShrink: 0,
+      width: 20,
+      height: 20,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: theme.palette.common.white,
+      fontSize: '0.65rem',
+      fontWeight: 700,
+      boxShadow: onBrand ? `0 0 0 2px ${theme.palette.common.white}` : 'none',
+    },
+    pointText: {
+      minWidth: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '0.75rem',
+      lineHeight: 1.4,
+    },
+  };
+});
 
 const formatDuration = (milliseconds, t) => {
   const totalMinutes = Math.round(milliseconds / 60000);

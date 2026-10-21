@@ -19,6 +19,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAsyncTask } from '../reactHelper';
 import BackIcon from '../common/components/BackIcon';
 import fetchOrThrow from '../common/util/fetchOrThrow';
+import { BrandPage } from '../common/theme/BrandSurface';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -68,62 +69,64 @@ const NetworkPage = () => {
   });
 
   return (
-    <div className={classes.root}>
-      <AppBar position="sticky" color="inherit">
-        <Toolbar>
-          <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
-            <BackIcon />
-          </IconButton>
-          <Typography variant="h6">{deviceName}</Typography>
-        </Toolbar>
-      </AppBar>
-      <div className={classes.content}>
-        <Container maxWidth="sm">
-          <Paper>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>MCC</TableCell>
-                  <TableCell>MNC</TableCell>
-                  <TableCell>LAC</TableCell>
-                  <TableCell>CID</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {(item.network?.cellTowers || []).map((cell) => (
-                  <TableRow key={cell.cellId}>
-                    <TableCell>{cell.mobileCountryCode}</TableCell>
-                    <TableCell>{cell.mobileNetworkCode}</TableCell>
-                    <TableCell>{cell.locationAreaCode}</TableCell>
-                    <TableCell>{cell.cellId}</TableCell>
+    <BrandPage>
+      <div className={classes.root}>
+        <AppBar position="sticky" color="inherit">
+          <Toolbar>
+            <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
+              <BackIcon />
+            </IconButton>
+            <Typography variant="h6">{deviceName}</Typography>
+          </Toolbar>
+        </AppBar>
+        <div className={classes.content}>
+          <Container maxWidth="sm">
+            <Paper>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>MCC</TableCell>
+                    <TableCell>MNC</TableCell>
+                    <TableCell>LAC</TableCell>
+                    <TableCell>CID</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
-        </Container>
-        <Container maxWidth="sm">
-          <Paper>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>MAC</TableCell>
-                  <TableCell>RSSI</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {(item.network?.wifiAccessPoints || []).map((wifi) => (
-                  <TableRow key={wifi.macAddress}>
-                    <TableCell>{wifi.macAddress}</TableCell>
-                    <TableCell>{wifi.signalStrength}</TableCell>
+                </TableHead>
+                <TableBody>
+                  {(item.network?.cellTowers || []).map((cell) => (
+                    <TableRow key={cell.cellId}>
+                      <TableCell>{cell.mobileCountryCode}</TableCell>
+                      <TableCell>{cell.mobileNetworkCode}</TableCell>
+                      <TableCell>{cell.locationAreaCode}</TableCell>
+                      <TableCell>{cell.cellId}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
+          </Container>
+          <Container maxWidth="sm">
+            <Paper>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>MAC</TableCell>
+                    <TableCell>RSSI</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
-        </Container>
+                </TableHead>
+                <TableBody>
+                  {(item.network?.wifiAccessPoints || []).map((wifi) => (
+                    <TableRow key={wifi.macAddress}>
+                      <TableCell>{wifi.macAddress}</TableCell>
+                      <TableCell>{wifi.signalStrength}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
+          </Container>
+        </div>
       </div>
-    </div>
+    </BrandPage>
   );
 };
 

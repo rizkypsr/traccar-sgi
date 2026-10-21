@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState, useCallback, useEffect } from 'react';
-import { Paper } from '@mui/material';
+import { GlobalStyles, Paper } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
 import DeviceList from './DeviceList';
@@ -13,8 +13,12 @@ import EventsDrawer from './EventsDrawer';
 import useFilter from './useFilter';
 import MainToolbar from './MainToolbar';
 import { useAttributePreference } from '../common/util/preferences';
+import { brandColor, brandColorDark, brandColorLight } from '../common/theme/brand';
 
 const MainMap = lazy(() => import('./MainMap'));
+
+// height of the logo-only mobile header (excluding the safe-area inset)
+const mobileHeaderHeight = 52;
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -57,6 +61,28 @@ const useStyles = makeStyles()((theme) => ({
     overflow: 'hidden',
     boxShadow: theme.shadows[6],
   },
+  // mobile: gradient header attached to the top edge with rounded bottom corners
+  mobileHeader: {
+    position: 'fixed',
+    zIndex: 6,
+    top: 0,
+    left: 0,
+    right: 0,
+    pointerEvents: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingTop: 'calc(env(safe-area-inset-top) + 12px)',
+    paddingBottom: 12,
+    borderRadius: theme.spacing(0, 0, 3, 3),
+    background: `linear-gradient(135deg, ${brandColorLight} 0%, ${brandColor} 55%, ${brandColorDark} 100%)`,
+    boxShadow: `0 6px 18px ${alpha(brandColor, 0.3)}`,
+  },
+  mobileLogo: {
+    height: 28,
+    width: 'auto',
+    display: 'block',
+  },
   header: {
     pointerEvents: 'auto',
     zIndex: 6,
@@ -81,7 +107,9 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     minHeight: 0,
     [theme.breakpoints.down('md')]: {
-      // keep the last rows clear of the floating bottom navigation
+      background: `linear-gradient(160deg, ${brandColorLight} 0%, ${brandColor} 55%, ${brandColorDark} 100%)`,
+      // keep the rows clear of the mobile header and the bottom navigation
+      paddingTop: `calc(${mobileHeaderHeight}px + env(safe-area-inset-top))`,
       paddingBottom: theme.dimensions.bottomBarHeight,
     },
   },
@@ -140,6 +168,20 @@ const MainPage = () => {
     setFilteredPositions,
   );
 
+  const toolbarProps = {
+    filteredDevices,
+    devicesOpen,
+    setDevicesOpen,
+    keyword,
+    setKeyword,
+    filter,
+    setFilter,
+    filterSort,
+    setFilterSort,
+    filterMap,
+    setFilterMap,
+  };
+
   return (
     <div className={classes.root}>
       {desktop && (
@@ -153,25 +195,30 @@ const MainPage = () => {
       )}
       <div className={classes.sidebar}>
         <div className={cx(classes.panel, desktop && devicesOpen && classes.sidebarCard)}>
-          <Paper
-            square
-            elevation={desktop ? 0 : 3}
-            className={cx(classes.header, desktop && !devicesOpen && classes.floating)}
-          >
-            <MainToolbar
-              filteredDevices={filteredDevices}
-              devicesOpen={devicesOpen}
-              setDevicesOpen={setDevicesOpen}
-              keyword={keyword}
-              setKeyword={setKeyword}
-              filter={filter}
-              setFilter={setFilter}
-              filterSort={filterSort}
-              setFilterSort={setFilterSort}
-              filterMap={filterMap}
-              setFilterMap={setFilterMap}
-            />
-          </Paper>
+          {desktop ? (
+            <Paper
+              square
+              elevation={0}
+              className={cx(classes.header, !devicesOpen && classes.floating)}
+            >
+              <MainToolbar {...toolbarProps} />
+            </Paper>
+          ) : (
+            <div className={classes.mobileHeader}>
+              <img
+                className={classes.mobileLogo}
+                src={`${import.meta.env.BASE_URL}login-logo.webp`}
+                alt="IDGPS"
+              />
+              <GlobalStyles
+                styles={{
+                  '.maplibregl-ctrl-top-right': {
+                    marginTop: `calc(${mobileHeaderHeight}px + env(safe-area-inset-top))`,
+                  },
+                }}
+              />
+            </div>
+          )}
           <div className={classes.middle}>
             {!desktop && (
               <div className={classes.contentMap}>

@@ -24,6 +24,7 @@ import MapScale from '../map/MapScale';
 import BackIcon from '../common/components/BackIcon';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import { deviceEquality } from '../common/util/deviceEquality';
+import { BrandPage } from '../common/theme/BrandSurface';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -104,49 +105,51 @@ const EmulatorPage = () => {
   });
 
   return (
-    <div className={classes.root}>
-      <div className={classes.content}>
-        <Drawer
-          className={classes.drawer}
-          anchor={isPhone ? 'top' : 'left'}
-          variant="permanent"
-          slotProps={{ paper: { className: classes.drawerPaper } }}
-        >
-          <Toolbar>
-            <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
-              <BackIcon />
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              {t('sharedEmulator')}
-            </Typography>
-          </Toolbar>
-          <Divider />
-          <List>
-            <ListItem>
-              <SelectField
-                label={t('reportDevice')}
-                data={Object.values(devices).sort((a, b) => a.name.localeCompare(b.name))}
-                value={deviceId}
-                onChange={(e) => dispatch(devicesActions.selectId(e.target.value))}
-                fullWidth
+    <BrandPage>
+      <div className={classes.root}>
+        <div className={classes.content}>
+          <Drawer
+            className={classes.drawer}
+            anchor={isPhone ? 'top' : 'left'}
+            variant="permanent"
+            slotProps={{ paper: { className: classes.drawerPaper } }}
+          >
+            <Toolbar>
+              <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
+                <BackIcon />
+              </IconButton>
+              <Typography variant="h6" className={classes.title}>
+                {t('sharedEmulator')}
+              </Typography>
+            </Toolbar>
+            <Divider />
+            <List>
+              <ListItem>
+                <SelectField
+                  label={t('reportDevice')}
+                  data={Object.values(devices).sort((a, b) => a.name.localeCompare(b.name))}
+                  value={deviceId}
+                  onChange={(e) => dispatch(devicesActions.selectId(e.target.value))}
+                  fullWidth
+                />
+              </ListItem>
+            </List>
+          </Drawer>
+          <div className={classes.mapContainer}>
+            <MapView>
+              <MapPositionMarkers
+                positions={Object.values(positions)}
+                onMapClick={handleClick}
+                showStatus
               />
-            </ListItem>
-          </List>
-        </Drawer>
-        <div className={classes.mapContainer}>
-          <MapView>
-            <MapPositionMarkers
-              positions={Object.values(positions)}
-              onMapClick={handleClick}
-              showStatus
-            />
-          </MapView>
-          <MapScale />
-          <MapCurrentLocation />
-          <MapGeocoder />
+            </MapView>
+            <MapScale />
+            <MapCurrentLocation />
+            <MapGeocoder />
+          </div>
         </div>
       </div>
-    </div>
+    </BrandPage>
   );
 };
 
