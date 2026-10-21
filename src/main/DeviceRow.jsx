@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
-import { alpha } from '@mui/material/styles';
+import { alpha, lighten } from '@mui/material/styles';
 import { brandColor } from '../common/theme/brand';
 import {
   IconButton,
@@ -41,66 +41,68 @@ import MotionBar from './components/MotionBar';
 
 dayjs.extend(relativeTime);
 
-// onGradient: the mobile list sits on the brand gradient, so content switches to white tones
-const useStyles = makeStyles()((theme, { onGradient }) => {
-  const white = theme.palette.common.white;
-  return {
-    avatar: {
-      backgroundColor: 'transparent',
+// card: on mobile the list sits on the brand gradient, so each row is a white card
+const useStyles = makeStyles()((theme, { card }) => ({
+  avatar: {
+    backgroundColor: 'transparent',
+  },
+  icon: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+  },
+  batteryText: {
+    fontSize: '0.75rem',
+    fontWeight: 'normal',
+    lineHeight: '0.875rem',
+  },
+  // status colors shared with map labels and the device card
+  success: {
+    color: deviceStateColors.moving,
+  },
+  warning: {
+    color: '#F59E0B',
+  },
+  error: {
+    color: brandColor,
+  },
+  neutral: {
+    color: deviceStateColors.offline,
+  },
+  statusIcon: {
+    fontSize: 18,
+  },
+  row: {
+    height: 64,
+    margin: theme.spacing(0.5, 1),
+    padding: theme.spacing(0, 1, 0, 1.5),
+    borderRadius: theme.spacing(1.5),
+    transition: theme.transitions.create('background-color', {
+      duration: theme.transitions.duration.shortest,
+    }),
+    ...(card && {
+      color: theme.palette.text.primary,
+      backgroundColor: theme.palette.common.white,
+      boxShadow: theme.shadows[2],
+    }),
+    '&:hover': {
+      backgroundColor: card ? lighten(brandColor, 0.95) : alpha(brandColor, 0.05),
     },
-    icon: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'contain',
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: card ? lighten(brandColor, 0.88) : alpha(brandColor, 0.1),
+      ...(card && { boxShadow: `inset 0 0 0 2px ${brandColor}, ${theme.shadows[2]}` }),
     },
-    batteryText: {
-      fontSize: '0.75rem',
-      fontWeight: 'normal',
-      lineHeight: '0.875rem',
+    '& .MuiListItemText-primary': {
+      fontWeight: 500,
     },
-    // status colors shared with map labels and the device card
-    success: {
-      color: onGradient ? white : deviceStateColors.moving,
+    '& .MuiListItemText-secondary': {
+      ...(card && { color: theme.palette.text.secondary }),
     },
-    warning: {
-      color: onGradient ? alpha(white, 0.85) : '#F59E0B',
+    '&.Mui-selected .MuiListItemText-primary': {
+      fontWeight: 700,
     },
-    error: {
-      color: onGradient ? '#FFE08A' : brandColor,
-    },
-    neutral: {
-      color: onGradient ? alpha(white, 0.6) : deviceStateColors.offline,
-    },
-    statusIcon: {
-      fontSize: 18,
-    },
-    row: {
-      height: 64,
-      margin: theme.spacing(0.5, 1),
-      padding: theme.spacing(0, 1, 0, 1.5),
-      borderRadius: theme.spacing(1.5),
-      transition: theme.transitions.create('background-color', {
-        duration: theme.transitions.duration.shortest,
-      }),
-      '&:hover': {
-        backgroundColor: onGradient ? alpha(white, 0.1) : alpha(brandColor, 0.05),
-      },
-      '&.Mui-selected, &.Mui-selected:hover': {
-        backgroundColor: onGradient ? alpha(white, 0.18) : alpha(brandColor, 0.1),
-      },
-      '& .MuiListItemText-primary': {
-        fontWeight: 500,
-        ...(onGradient && { color: white }),
-      },
-      '& .MuiListItemText-secondary': {
-        ...(onGradient && { color: alpha(white, 0.8) }),
-      },
-      '&.Mui-selected .MuiListItemText-primary': {
-        fontWeight: 700,
-      },
-    },
-  };
-});
+  },
+}));
 
 const batteryIcon = (attributes, classes, cx) => {
   const level = attributes.batteryLevel;
@@ -121,8 +123,8 @@ const batteryIcon = (attributes, classes, cx) => {
 
 const DeviceRow = ({ devices, index, style }) => {
   const theme = useTheme();
-  const onGradient = useMediaQuery(theme.breakpoints.down('md'));
-  const { classes, cx } = useStyles({ onGradient });
+  const card = useMediaQuery(theme.breakpoints.down('md'));
+  const { classes, cx } = useStyles({ card });
   const dispatch = useDispatch();
   const t = useTranslation();
 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
 import {
   Card,
+  Tooltip,
   Typography,
   IconButton,
   Menu,
@@ -33,7 +34,6 @@ import {
   SolarCarDuotone,
   SolarCloseCircleDuotone,
   SolarDeliveryDuotone,
-  SolarGpsDuotone,
   SolarInfoDuotone,
   SolarKeyDuotone,
   SolarMapArrowDuotone,
@@ -42,6 +42,7 @@ import {
   SolarMenuDots,
   SolarPlayCircleDuotone,
   SolarSatelliteDuotone,
+  SolarShareDuotone,
   SolarScooterDuotone,
   SolarSpeedometerDuotone,
   SolarTramDuotone,
@@ -80,7 +81,6 @@ const categoryIcon = (category) => {
 };
 import fetchOrThrow from '../util/fetchOrThrow';
 import { brandColor } from '../theme/brand';
-import BrandSurface, { accentColor, brandGradient } from '../theme/BrandSurface';
 
 const stateLabels = {
   moving: 'deviceStateMoving',
@@ -89,10 +89,6 @@ const stateLabels = {
 };
 
 const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) => {
-  const onBrand = Boolean(theme.palette.onBrand);
-  const accent = accentColor(theme);
-  // on the brand surface status colors keep only the dot; glyph and text turn white
-  const stateColor = onBrand ? theme.palette.common.white : color;
   return {
     root: {
       pointerEvents: 'none',
@@ -118,12 +114,12 @@ const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) =
       pointerEvents: 'auto',
       width: 440,
       maxWidth: `calc(100vw - ${theme.spacing(4)})`,
-      padding: theme.spacing(1.25, 1.5, 1.5),
+      padding: theme.spacing(1, 1.25, 1.25),
       borderRadius: theme.spacing(2.5),
-      background: onBrand ? brandGradient : theme.palette.background.paper,
+      background: theme.palette.background.paper,
       display: 'flex',
       flexDirection: 'column',
-      gap: theme.spacing(1),
+      gap: theme.spacing(0.75),
       [theme.breakpoints.down('md')]: {
         width: '100%',
         maxWidth: 'none',
@@ -131,8 +127,8 @@ const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) =
         boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.12)',
       },
       [theme.breakpoints.down('sm')]: {
-        padding: theme.spacing(1, 1.25, 1.25),
-        gap: theme.spacing(0.75),
+        padding: theme.spacing(0.75, 1, 1),
+        gap: theme.spacing(0.5),
       },
     },
     header: {
@@ -143,8 +139,8 @@ const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) =
     },
     glyph: {
       flexShrink: 0,
-      fontSize: 22,
-      color: stateColor,
+      fontSize: 20,
+      color,
     },
     photo: {
       flexShrink: 0,
@@ -159,7 +155,8 @@ const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) =
     },
     name: {
       fontWeight: 700,
-      lineHeight: 1.25,
+      fontSize: '0.95rem',
+      lineHeight: 1.2,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
@@ -184,7 +181,7 @@ const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) =
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(0.75),
-      color: stateColor,
+      color,
       fontWeight: 700,
       whiteSpace: 'nowrap',
       '&::before': {
@@ -200,59 +197,48 @@ const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) =
       gridTemplateColumns: 'repeat(4, 1fr)',
       gap: theme.spacing(0.75),
     },
+    // compact chips: icon + value, the label is the tooltip
     stat: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: theme.spacing(0.75),
-      padding: theme.spacing(0.75, 0.5),
-      borderRadius: theme.spacing(1.25),
-      backgroundColor: alpha(accent, onBrand ? 0.15 : 0.08),
+      gap: theme.spacing(0.5),
+      height: 28,
+      padding: theme.spacing(0, 0.5),
+      borderRadius: theme.spacing(1),
+      backgroundColor: alpha(brandColor, 0.08),
       minWidth: 0,
       '& svg': {
-        color: accent,
-        fontSize: 16,
+        flexShrink: 0,
+        color: brandColor,
+        fontSize: 15,
       },
-      [theme.breakpoints.down('sm')]: {
-        flexDirection: 'column',
-        gap: 0,
-        '& svg': {
-          fontSize: 14,
-        },
-      },
-    },
-    statText: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      minWidth: 0,
-    },
-    statLabel: {
-      fontSize: '0.7rem',
-      lineHeight: 1.2,
     },
     statValue: {
       fontWeight: 700,
-      fontSize: '0.9rem',
-      lineHeight: 1.2,
+      fontSize: '0.8rem',
+      lineHeight: 1,
       whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     address: {
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(0.75),
-      padding: theme.spacing(0.75, 1),
-      borderRadius: theme.spacing(1.25),
+      padding: theme.spacing(0.5, 1),
+      borderRadius: theme.spacing(1),
       backgroundColor: alpha(theme.palette.text.primary, 0.06),
       minWidth: 0,
       '& svg': {
-        color: accent,
+        color: brandColor,
         fontSize: 15,
       },
     },
     addressText: {
       minWidth: 0,
-      lineHeight: 1.35,
+      fontSize: '0.8rem',
+      lineHeight: 1.3,
       overflowWrap: 'anywhere',
     },
     actions: {
@@ -264,59 +250,46 @@ const useStyles = makeStyles()((theme, { desktopPadding, color, attachToNav }) =
       display: 'flex',
       flexDirection: 'column',
       gap: theme.spacing(0.25),
-      padding: theme.spacing(0.75, 0.25),
-      borderRadius: theme.spacing(1.25),
-      backgroundColor: alpha(accent, onBrand ? 0.15 : 0.08),
+      padding: theme.spacing(0.5, 0.25),
+      borderRadius: theme.spacing(1),
+      backgroundColor: alpha(brandColor, 0.08),
       color: theme.palette.text.primary,
       textAlign: 'center',
       '& svg': {
-        color: accent,
-        fontSize: 16,
+        color: brandColor,
+        fontSize: 15,
       },
       '&:hover': {
-        backgroundColor: alpha(accent, onBrand ? 0.25 : 0.16),
+        backgroundColor: alpha(brandColor, 0.16),
       },
       '&.Mui-disabled': {
         opacity: 0.45,
       },
     },
-    actionActive: {
-      backgroundColor: accent,
-      color: onBrand ? brandColor : theme.palette.common.white,
-      '& svg': {
-        color: onBrand ? brandColor : theme.palette.common.white,
-      },
-      '&:hover': {
-        backgroundColor: accent,
-      },
-    },
     actionLabel: {
-      fontSize: '0.7rem',
-      lineHeight: 1.15,
+      fontSize: '0.65rem',
+      lineHeight: 1.1,
     },
   };
 });
 
 const Stat = ({ classes, icon, label, value }) => (
-  <div className={classes.stat}>
-    {icon}
-    <div className={classes.statText}>
-      <Typography color="textSecondary" className={classes.statLabel} noWrap>
-        {label}
-      </Typography>
+  <Tooltip title={label}>
+    <div className={classes.stat} aria-label={label}>
+      {icon}
       <Typography className={classes.statValue}>{value}</Typography>
     </div>
-  </div>
+  </Tooltip>
 );
 
-const Action = ({ classes, cx, icon, label, active, ...props }) => (
-  <ButtonBase className={cx(classes.action, active && classes.actionActive)} {...props}>
+const Action = ({ classes, icon, label, ...props }) => (
+  <ButtonBase className={classes.action} {...props}>
     {icon}
     <Typography className={classes.actionLabel}>{label}</Typography>
   </ButtonBase>
 );
 
-const StatusCardContent = ({
+const StatusCard = ({
   deviceId,
   position,
   onClose,
@@ -334,7 +307,6 @@ const StatusCardContent = ({
   const shareDisabled = useSelector((state) => state.session.server.attributes.disableShare);
   const user = useSelector((state) => state.session.user);
   const device = useSelector((state) => state.devices.items[deviceId]);
-  const follow = useSelector((state) => state.devices.follow);
 
   const speedUnit = useAttributePreference('speedUnit');
   const navigationAppLink = useAttributePreference('navigationAppLink');
@@ -495,16 +467,13 @@ const StatusCardContent = ({
               <div className={classes.actions}>
                 <Action
                   classes={classes}
-                  cx={cx}
-                  icon={<SolarGpsDuotone />}
-                  label={t('deviceFollow')}
-                  active={follow}
-                  onClick={() => dispatch(devicesActions.toggleFollow())}
-                  disabled={disableActions || !position}
+                  icon={<SolarShareDuotone />}
+                  label={t('sharedShare')}
+                  onClick={() => navigate(`/settings/device/${deviceId}/share`)}
+                  disabled={shareDisabled || user.temporary}
                 />
                 <Action
                   classes={classes}
-                  cx={cx}
                   icon={<SolarPlayCircleDuotone />}
                   label={t('deviceCardPlayback')}
                   onClick={() => navigate(`/replay?deviceId=${deviceId}`)}
@@ -512,7 +481,6 @@ const StatusCardContent = ({
                 />
                 <Action
                   classes={classes}
-                  cx={cx}
                   icon={<SolarMapArrowDuotone />}
                   label={
                     navigationAppLink && navigationAppTitle
@@ -526,7 +494,6 @@ const StatusCardContent = ({
                 />
                 <Action
                   classes={classes}
-                  cx={cx}
                   icon={<SolarMapDuotone />}
                   label={t('linkGoogleMaps')}
                   component="a"
@@ -536,7 +503,6 @@ const StatusCardContent = ({
                 />
                 <Action
                   classes={classes}
-                  cx={cx}
                   icon={<SolarInfoDuotone />}
                   label={t('deviceCardDetails')}
                   onClick={() => navigate(`/position/${position.id}`)}
@@ -589,11 +555,6 @@ const StatusCardContent = ({
             {t('linkStreetView')}
           </MenuItem>
         )}
-        {!shareDisabled && !user.temporary && (
-          <MenuItem onClick={() => navigate(`/settings/device/${deviceId}/share`)}>
-            {t('sharedShare')}
-          </MenuItem>
-        )}
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
@@ -611,17 +572,6 @@ const StatusCardContent = ({
         onResult={(removed) => handleRemove(removed)}
       />
     </>
-  );
-};
-
-// mobile: the card joins the gradient bottom navigation, so it renders on the brand surface
-const StatusCard = (props) => {
-  const theme = useTheme();
-  const desktop = useMediaQuery(theme.breakpoints.up('md'));
-  return (
-    <BrandSurface enabled={!desktop}>
-      <StatusCardContent {...props} />
-    </BrandSurface>
   );
 };
 

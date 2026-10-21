@@ -111,7 +111,36 @@ const useStyles = makeStyles()((theme) => ({
       // keep the rows clear of the mobile header and the bottom navigation
       paddingTop: `calc(${mobileHeaderHeight}px + env(safe-area-inset-top))`,
       paddingBottom: theme.dimensions.bottomBarHeight,
+      flexDirection: 'column',
     },
+  },
+  // mobile: search and filter as a white card above the device rows
+  listSearch: {
+    margin: theme.spacing(1.5, 1, 1),
+    borderRadius: theme.spacing(1.5),
+    backgroundColor: theme.palette.common.white,
+    boxShadow: theme.shadows[2],
+    '& .MuiToolbar-root': {
+      minHeight: 56,
+      padding: theme.spacing(0, 1),
+    },
+    // doubled class outranks the toolbar's pill radius; corners match the cards
+    '& .MuiOutlinedInput-root.MuiOutlinedInput-root': {
+      flex: 1,
+      minWidth: 0,
+      borderRadius: theme.spacing(1.5),
+    },
+    '& .MuiToolbar-root > .MuiIconButton-root': {
+      flexShrink: 0,
+      marginRight: 0,
+      width: 40,
+      height: 40,
+      borderRadius: theme.spacing(1.5),
+    },
+  },
+  listRows: {
+    flex: 1,
+    minHeight: 0,
   },
 }));
 
@@ -237,7 +266,18 @@ const MainPage = () => {
               className={classes.contentList}
               style={devicesOpen ? {} : { visibility: 'hidden' }}
             >
-              <DeviceList devices={filteredDevices} />
+              {desktop ? (
+                <DeviceList devices={filteredDevices} />
+              ) : (
+                <>
+                  <div className={classes.listSearch}>
+                    <MainToolbar {...toolbarProps} />
+                  </div>
+                  <div className={classes.listRows}>
+                    <DeviceList devices={filteredDevices} />
+                  </div>
+                </>
+              )}
             </Paper>
           </div>
         </div>
@@ -248,7 +288,8 @@ const MainPage = () => {
         )}
       </div>
       <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
-      {selectedDeviceId && (
+      {/* on mobile the device list covers the map, so the card stays hidden while it is open */}
+      {selectedDeviceId && (desktop || !devicesOpen) && (
         <StatusCard
           deviceId={selectedDeviceId}
           position={selectedPosition}
