@@ -80,7 +80,7 @@ const BrandSurface = ({ enabled = true, children }) => {
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 };
 
-// Full page on the brand gradient on mobile, for standalone pages that don't use PageLayout
+// Standalone pages (no PageLayout) on mobile: gradient backdrop with the content on a white sheet
 export const BrandPage = ({ children }) => {
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -88,9 +88,25 @@ export const BrandPage = ({ children }) => {
     return children;
   }
   return (
-    <BrandSurface>
-      <div style={{ height: '100%', background: brandGradient, color: white }}>{children}</div>
-    </BrandSurface>
+    <div
+      style={{
+        height: '100%',
+        boxSizing: 'border-box',
+        background: brandGradient,
+        paddingTop: theme.spacing(1.5),
+      }}
+    >
+      <div
+        style={{
+          height: '100%',
+          overflow: 'hidden',
+          borderRadius: theme.spacing(3, 3, 0, 0),
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
+        {children}
+      </div>
+    </div>
   );
 };
 
