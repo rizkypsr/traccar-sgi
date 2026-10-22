@@ -26,6 +26,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CachedIcon from '@mui/icons-material/Cached';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { brandColor } from '../common/theme/brand';
 import { useTranslation, useTranslationKeys } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
@@ -144,7 +145,7 @@ const PreferencesPage = () => {
                       <MenuItem key={style.id} value={style.id}>
                         <Typography
                           component="span"
-                          color={style.available ? 'textPrimary' : 'error'}
+                          sx={style.available ? undefined : { color: brandColor }}
                         >
                           {style.title}
                         </Typography>
@@ -175,7 +176,7 @@ const PreferencesPage = () => {
                       <MenuItem key={overlay.id} value={overlay.id}>
                         <Typography
                           component="span"
-                          color={overlay.available ? 'textPrimary' : 'error'}
+                          sx={overlay.available ? undefined : { color: brandColor }}
                         >
                           {overlay.title}
                         </Typography>

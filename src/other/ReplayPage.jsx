@@ -110,9 +110,6 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     padding: theme.spacing(2),
-    [theme.breakpoints.down('md')]: {
-      background: theme.palette.background.paper,
-    },
   },
 }));
 
@@ -310,8 +307,8 @@ const ReplayPage = () => {
         // keep the map's top-right controls below the floating header
         <GlobalStyles styles={{ '.maplibregl-ctrl-top-right': { marginTop: 64 } }} />
       )}
-      <div className={classes.sidebar}>
-        <BrandSurface enabled={!desktop}>
+      <BrandSurface enabled={!desktop}>
+        <div className={classes.sidebar}>
           <Paper elevation={0} className={classes.card}>
             <Toolbar className={classes.toolbar} disableGutters>
               <IconButton onClick={() => navigate(-1)}>
@@ -335,17 +332,14 @@ const ReplayPage = () => {
               )}
             </Toolbar>
           </Paper>
-        </BrandSurface>
-        {/* the filter form stays on a solid white card so fields and dropdowns read normally */}
-        <Paper
-          elevation={0}
-          className={`${classes.content} ${classes.card}`}
-          style={{ display: loaded && !filterOpen ? 'none' : 'flex' }}
-        >
-          <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
-        </Paper>
-      </div>
-      <BrandSurface enabled={!desktop}>
+          <Paper
+            elevation={0}
+            className={`${classes.content} ${classes.card}`}
+            style={{ display: loaded && !filterOpen ? 'none' : 'flex' }}
+          >
+            <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
+          </Paper>
+        </div>
         {loaded && !filterOpen && (
           <div className={classes.bottom}>
             {selectedStop != null && stops[selectedStop] && (

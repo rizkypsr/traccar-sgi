@@ -17,7 +17,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from './LocalizationProvider';
 import BackIcon from './BackIcon';
 import { SolarHamburgerLinear } from './SolarIcons';
-import { brandGradient } from '../theme/BrandSurface';
+import BrandSurface, { brandGradient } from '../theme/BrandSurface';
 import { brandColor, brandColorDark, brandColorLight } from '../theme/brand';
 
 const useStyles = makeStyles()((theme, { miniVariant }) => ({
@@ -112,12 +112,6 @@ const useStyles = makeStyles()((theme, { miniVariant }) => ({
     display: 'flex',
     flexDirection: 'column',
     overflowY: 'auto',
-    // mobile: a white sheet on the gradient, so forms, dropdowns and tables keep solid surfaces
-    [theme.breakpoints.down('md')]: {
-      marginTop: theme.spacing(1.5),
-      borderRadius: theme.spacing(3, 3, 0, 0),
-      backgroundColor: theme.palette.background.paper,
-    },
   },
 }));
 
@@ -218,7 +212,9 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
           </Toolbar>
         </AppBar>
       )}
-      <div className={classes.content}>{children}</div>
+      <BrandSurface enabled={!desktop}>
+        <div className={classes.content}>{children}</div>
+      </BrandSurface>
     </div>
   );
 };

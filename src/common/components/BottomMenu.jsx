@@ -29,7 +29,7 @@ import { useRestriction } from '../util/permissions';
 import { nativePostMessage } from './NativeInterface';
 import { alpha } from '@mui/material/styles';
 import { brandColor, brandColorDark, brandColorLight } from '../theme/brand';
-import BrandSurface from '../theme/BrandSurface';
+import BrandSurface, { brandGradient } from '../theme/BrandSurface';
 
 const useStyles = makeStyles()((theme) => ({
   // floating rounded card on desktop; on mobile a full-width gradient bar matching the header
@@ -264,7 +264,13 @@ const BottomMenu = () => {
         )}
       </BottomNavigation>
       <BrandSurface enabled={!desktop}>
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+          // matches the gradient navigation instead of the white dropdown lists
+          slotProps={desktop ? undefined : { paper: { style: { background: brandGradient } } }}
+        >
           <MenuItem onClick={handleAccount}>
             <Typography color="textPrimary">{t('settingsUser')}</Typography>
           </MenuItem>
