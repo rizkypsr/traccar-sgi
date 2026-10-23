@@ -7,6 +7,9 @@ import { deviceIconKey } from './core/preloadImages';
 import { useAttributePreference } from '../common/util/preferences';
 import { fromMapCoordinates } from './core/mapUtil';
 
+// side-view icons stay upright; only top-down vehicle icons follow the course
+const uprightIcons = ['person'];
+
 const MapPositionMarkers = ({
   positions,
   onMapClick,
@@ -38,6 +41,7 @@ const MapPositionMarkers = ({
   const buildMarker = (position) => {
     const device = devices[position.deviceId];
     const state = getDeviceState(device, position, showStatus);
+    const iconKey = deviceIconKey(device.category);
     const name = device.name.length > 15 ? `${device.name.slice(0, 15)}…` : device.name;
     const titles = { name, fixTime: formatTime(position.fixTime, 'seconds') };
     return {
@@ -45,10 +49,10 @@ const MapPositionMarkers = ({
       deviceId: position.deviceId,
       latitude: position.latitude,
       longitude: position.longitude,
-      image: `${deviceIconKey(device.category)}-${state}`,
+      image: `${iconKey}-${state}`,
       title: titles[titleField || 'name'],
       labelImage: showStatus ? `label-${state}` : 'label',
-      rotation: position.course,
+      rotation: uprightIcons.includes(iconKey) ? 0 : position.course,
     };
   };
 
