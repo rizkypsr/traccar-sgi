@@ -531,3 +531,43 @@ export const SolarShareDuotone = (props) => (
     </g>
   </SvgIcon>
 );
+
+export const SolarUserLinear = (props) => (
+  <SvgIcon viewBox="0 0 24 24" {...props}>
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5">
+      <circle cx="12" cy="6" r="4" />
+      <path d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z" />
+    </g>
+  </SvgIcon>
+);
+
+export const SolarLockKeyholeLinear = (props) => (
+  <SvgIcon viewBox="0 0 24 24" {...props}>
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5">
+      <path d="M2 16C2 13.1716 2 11.7574 2.87868 10.8787C3.75736 10 5.17157 10 8 10H16C18.8284 10 20.2426 10 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22H8C5.17157 22 3.75736 22 2.87868 21.1213C2 20.2426 2 18.8284 2 16Z" />
+      <path d="M12 14V18" />
+      <path d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10" />
+    </g>
+  </SvgIcon>
+);
+
+export const SolarEyeLinear = (props) => (
+  <SvgIcon viewBox="0 0 24 24" {...props}>
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5">
+      <path d="M3.27489 15.2957C2.42496 14.1915 2 13.6394 2 12C2 10.3606 2.42496 9.80853 3.27489 8.70433C4.97196 6.49956 7.81811 4 12 4C16.1819 4 19.028 6.49956 20.7251 8.70433C21.575 9.80853 22 10.3606 22 12C22 13.6394 21.575 14.1915 20.7251 15.2957C19.028 17.5004 16.1819 20 12 20C7.81811 20 4.97196 17.5004 3.27489 15.2957Z" />
+      <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" />
+    </g>
+  </SvgIcon>
+);
+
+export const SolarEyeClosedLinear = (props) => (
+  <SvgIcon viewBox="0 0 24 24" {...props}>
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="1.5"
+      d="M12 14C5 14 2 7 2 7M22 7C22 7 21.0586 9.19661 19 11.1288C18.0872 11.9856 16.9547 12.7904 15.5872 13.3287C14.5334 13.7435 13.34 14 12 14M12 14V16.5M15.5872 13.3287L17 15.5M19 11.1288L20.5 12.6288M8.41281 13.3287L7 15.5M5 11.1288L3.5 12.6288"
+    />
+  </SvgIcon>
+);

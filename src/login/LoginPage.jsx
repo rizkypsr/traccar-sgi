@@ -3,8 +3,6 @@ import { Button, TextField, Link, Alert, IconButton, Tooltip, InputAdornment } f
 import { makeStyles } from 'tss-react/mui';
 import { alpha } from '@mui/material/styles';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { sessionActions } from '../store';
@@ -20,6 +18,7 @@ import {
 } from '../common/components/NativeInterface';
 import { useCatch } from '../reactHelper';
 import PasswordField from '../common/components/PasswordField';
+import { SolarLockKeyholeLinear, SolarUserLinear } from '../common/components/SolarIcons';
 
 const useStyles = makeStyles()((theme) => ({
   options: {
@@ -36,39 +35,60 @@ const useStyles = makeStyles()((theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2.5),
+    gap: theme.spacing(2.25),
+  },
+  fields: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2.25),
+    marginTop: theme.spacing(5),
   },
   field: {
     '& .MuiOutlinedInput-root': {
-      height: theme.spacing(7),
-      borderRadius: theme.spacing(1.75),
-      backgroundColor: '#FFFFFF',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+      height: 52,
+      borderRadius: 12,
+      backgroundColor: alpha('#FFFFFF', 0.93),
+      boxShadow: '0 4px 14px rgba(0, 0, 0, 0.12)',
+    },
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'transparent',
+    },
+    '& .MuiInputAdornment-positionStart': {
+      marginRight: theme.spacing(1.5),
+    },
+    '& .MuiInputAdornment-positionEnd .MuiSvgIcon-root': {
+      fontSize: 26,
+      color: theme.palette.grey[800],
+    },
+    '& .MuiFormHelperText-root': {
+      color: '#FFD9D2',
     },
   },
   userIcon: {
-    color: theme.palette.grey[800],
+    fontSize: 26,
+    color: theme.palette.grey[900],
   },
   lockIcon: {
+    fontSize: 26,
     color: brandColor,
   },
   loginButton: {
-    height: theme.spacing(7),
-    marginTop: theme.spacing(1),
-    borderRadius: theme.spacing(1.75),
-    fontSize: '1.125rem',
+    height: 48,
+    marginTop: theme.spacing(0.75),
+    borderRadius: 12,
+    fontSize: '1.05rem',
     fontWeight: 700,
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
     color: '#FFFFFF',
     background: `linear-gradient(180deg, ${brandColorLight} 0%, ${brandColor} 100%)`,
-    boxShadow: `0 8px 20px ${alpha(brandColor, 0.35)}`,
+    boxShadow: `0 8px 22px ${alpha(brandColor, 0.45)}`,
     '&:hover': {
       background: `linear-gradient(180deg, ${brandColor} 0%, ${brandColorDark} 100%)`,
     },
     '&.Mui-disabled': {
       color: '#FFFFFF',
-      opacity: 0.6,
+      opacity: 1,
     },
   },
   extraContainer: {
@@ -76,12 +96,12 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: theme.spacing(2),
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing(2),
   },
   link: {
     cursor: 'pointer',
     fontWeight: 700,
-    color: brandColorDark,
+    color: brandColor,
   },
   resetLink: {
     marginLeft: 'auto',
@@ -195,7 +215,7 @@ const LoginPage = () => {
           </Alert>
         )}
         {!openIdForced && (
-          <>
+          <div className={classes.fields}>
             <TextField
               required
               error={failed}
@@ -212,7 +232,7 @@ const LoginPage = () => {
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PersonOutlinedIcon className={classes.userIcon} />
+                      <SolarUserLinear className={classes.userIcon} />
                     </InputAdornment>
                   ),
                 },
@@ -233,7 +253,7 @@ const LoginPage = () => {
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockOutlinedIcon className={classes.lockIcon} />
+                      <SolarLockKeyholeLinear className={classes.lockIcon} />
                     </InputAdornment>
                   ),
                 },
@@ -260,7 +280,7 @@ const LoginPage = () => {
             >
               {t('loginLogin')}
             </Button>
-          </>
+          </div>
         )}
         {openIdEnabled && (
           <Button onClick={() => handleOpenIdLogin()} variant="contained" color="secondary">

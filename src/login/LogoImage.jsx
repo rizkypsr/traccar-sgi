@@ -3,9 +3,8 @@ import { makeStyles } from 'tss-react/mui';
 
 const useStyles = makeStyles()(() => ({
   image: {
-    maxWidth: '260px',
-    maxHeight: '120px',
-    width: '75%',
+    width: 116,
+    maxWidth: '60%',
     height: 'auto',
     objectFit: 'contain',
   },
@@ -19,7 +18,7 @@ const LogoImage = () => {
   return (
     <img
       className={classes.image}
-      src={logo || `${import.meta.env.BASE_URL}login-logo.webp`}
+      src={logo || `${import.meta.env.BASE_URL}login-logo-white.webp`}
       alt=""
     />
   );
